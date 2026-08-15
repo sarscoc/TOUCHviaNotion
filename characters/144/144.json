@@ -3,27 +3,36 @@
   "name": "衣通 夕",
   "image": "144.webp",
   "position": {
-    "x": 974,
-    "y": 1773,
-    "scale": 745.3869860663209
+    "x": 975,
+    "y": 1824,
+    "scale": 547.8816866447196
   },
   "areas": [
     {
       "key": "area1",
       "name": "エリア1",
       "x": 785,
-      "y": 417,
+      "y": 396,
       "width": 356,
-      "height": 403,
+      "height": 422,
       "priority": "normal"
     },
     {
       "key": "area2",
       "name": "エリア2",
       "x": 864,
-      "y": 152,
+      "y": 127,
       "width": 234,
-      "height": 208,
+      "height": 233,
+      "priority": "normal"
+    },
+    {
+      "key": "area3",
+      "name": "エリア3",
+      "x": 1015,
+      "y": 875,
+      "width": 127,
+      "height": 145,
       "priority": "normal"
     }
   ],
@@ -36,11 +45,11 @@
     "icon": {
       "image": "144.webp",
       "crop": {
-        "x": 287,
-        "y": 64,
-        "size": 485,
-        "sourceWidth": 1051,
-        "sourceHeight": 2400
+        "x": 103,
+        "y": 39,
+        "size": 448,
+        "sourceWidth": 649,
+        "sourceHeight": 2088
       }
     }
   }
