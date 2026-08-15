@@ -3742,15 +3742,34 @@ function applyPortraitIconCrop(imgElement, crop) {
     const apply = () => {
         const naturalW = Number(imgElement.naturalWidth || 0);
         const naturalH = Number(imgElement.naturalHeight || 0);
-        const size = Math.max(1, Number(crop.size) || 0);
 
-        if (!(naturalW > 0 && naturalH > 0 && size > 0)) {
+        if (!(naturalW > 0 && naturalH > 0)) {
             fallback();
             return;
         }
 
-        const x = Math.max(0, Number(crop.x) || 0);
-        const y = Math.max(0, Number(crop.y) || 0);
+        /*
+          crop の x / y / size は、エディターで切り抜いたときの元画像座標。
+          sourceWidth / sourceHeight と、ゲームで実際に読み込んだ画像サイズを比較して
+          自動で同じ比率へ変換する。
+          これにより WebP 保存時の縮小や画像差し替えがあっても、
+          エディターの切り抜きとゲームのアイコンが一致する。
+        */
+        const sourceW = Math.max(1, Number(crop.sourceWidth) || naturalW);
+        const sourceH = Math.max(1, Number(crop.sourceHeight) || naturalH);
+        const scaleX = naturalW / sourceW;
+        const scaleY = naturalH / sourceH;
+        const scaleSize = (scaleX + scaleY) / 2;
+
+        const x = Math.max(0, Number(crop.x) || 0) * scaleX;
+        const y = Math.max(0, Number(crop.y) || 0) * scaleY;
+        const size = Math.max(1, Number(crop.size) || 0) * scaleSize;
+
+        if (!(size > 0)) {
+            fallback();
+            return;
+        }
+
         const zoom = THUMB_SIZE / size;
 
         imgElement.style.position = "absolute";
