@@ -1,0 +1,4026 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=Hachi+Maru+Pop&family=Hina+Mincho&family=Kaisei+Decol:wght@400;700&family=Klee+One:wght@400;600&family=Kosugi+Maru&family=M+PLUS+1p:wght@400;500;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Mochiy+Pop+One&family=Mochiy+Pop+P+One&family=New+Tegomin&family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;700&family=Potta+One&family=Rampart+One&family=Reggae+One&family=RocknRoll+One&family=Shippori+Mincho:wght@400;600;700&family=Stick&family=Train+One&family=Yomogi&family=Yusei+Magic&family=Yuji+Boku&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="shortcut icon" href="#">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@500;600&family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDMincho:wght@400;700&family=Kaisei+HarunoUmi:wght@400;500;700&family=M+PLUS+1+Code&family=Shippori+Antique+B1&family=WDXL+Lubrifont+JP+N&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; }
+html, body { 
+    margin: 0; 
+    width: 100%; 
+    height: 100%; 
+    overflow: hidden;
+    background: #fff;
+}
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Arial Round', sans-serif;
+}
+
+/* 1920x1080基準の外枠コンテナ（自動縮小用） */
+#game-container {
+    width: 1920px;
+    height: 1080px;
+    position: relative;
+    flex: 0 0 1920px;
+}
+
+/* 1920x1080のゲーム本体を画面中央にフィット */
+
+/* ゲーム本体 */
+#game {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', sans-serif;
+    font-weight: 300;
+}
+
+#background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; }
+
+#backgroundVideo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+    display: none;
+    background: #fff;
+}
+
+#character { position: absolute;  object-fit: contain; pointer-events: none; transform-origin: 50% 88%;  will-change: transform; }
+#frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
+
+/* 台詞吹出し */
+#message {
+    position: absolute;
+    z-index: 180;
+    display: none;
+    width: 600px;
+    padding: 24px 32px;
+    background: linear-gradient(135deg, rgba(22, 24, 30, 0.85) 0%, rgba(10, 11, 15, 0.89) 70%, rgba(35, 40, 55, 0.78) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #f0f2f5;
+    font-size: 28px;
+    line-height: 1.6;
+    letter-spacing: 0.05em;
+    pointer-events: none;
+    word-break: break-word;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+    font-weight: 400;
+    clip-path: polygon(
+        12px 0, calc(100% - 12px) 0,
+        100% 12px, 100% calc(100% - 12px),
+        calc(100% - 12px) 100%, 12px 100%,
+        0 calc(100% - 12px), 0 12px
+    );
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.15);
+}
+
+
+/* 台詞文字専用アニメーション：吹き出し自体は動かさない */
+.message-text{
+    display: inline-block;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    transform-origin: center center;
+    will-change: transform, opacity, filter;
+}
+.message-text.anim-tremble{ animation: messageTextTremble .09s steps(2,end) infinite; }
+.message-text.anim-shake{ animation: messageTextShake .16s steps(2,end) infinite; }
+.message-text.anim-sway{ animation: messageTextSway 1.15s ease-in-out infinite; }
+.message-text.anim-float{ animation: messageTextFloat 1.35s ease-in-out infinite; }
+.message-text.anim-pulse{ animation: messageTextPulse .82s ease-in-out infinite; }
+.message-text.anim-bounce{ animation: messageTextBounce .72s ease-in-out infinite; }
+.message-text.anim-blink{ animation: messageTextBlink .68s steps(2,end) infinite; }
+.message-text.anim-glitch{ animation: messageTextGlitch .22s steps(2,end) infinite; }
+
+@keyframes messageTextTremble {
+    0%{transform:translate(0,0)}
+    25%{transform:translate(-1px,1px)}
+    50%{transform:translate(1px,-1px)}
+    75%{transform:translate(1px,1px)}
+    100%{transform:translate(-1px,-1px)}
+}
+@keyframes messageTextShake {
+    0%{transform:translateX(0) rotate(0)}
+    20%{transform:translateX(-4px) rotate(-.7deg)}
+    40%{transform:translateX(4px) rotate(.7deg)}
+    60%{transform:translateX(-3px) rotate(-.5deg)}
+    80%{transform:translateX(3px) rotate(.5deg)}
+    100%{transform:translateX(0) rotate(0)}
+}
+@keyframes messageTextSway {
+    0%,100%{transform:rotate(-1.4deg)}
+    50%{transform:rotate(1.4deg)}
+}
+@keyframes messageTextFloat {
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-5px)}
+}
+@keyframes messageTextPulse {
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.055)}
+}
+@keyframes messageTextBounce {
+    0%,100%{transform:translateY(0)}
+    45%{transform:translateY(-7px)}
+    65%{transform:translateY(1px)}
+}
+@keyframes messageTextBlink {
+    0%,45%{opacity:1}
+    50%,72%{opacity:.18}
+    77%,100%{opacity:1}
+}
+@keyframes messageTextGlitch {
+    0%{transform:translate(0,0);text-shadow:none}
+    25%{transform:translate(-2px,1px);text-shadow:2px 0 #ff4d8d,-2px 0 #57e7ff}
+    50%{transform:translate(2px,-1px);text-shadow:-2px 0 #ff4d8d,2px 0 #57e7ff}
+    75%{transform:translate(-1px,-1px);text-shadow:1px 0 #ff4d8d,-1px 0 #57e7ff}
+    100%{transform:translate(0,0);text-shadow:none}
+}
+
+/* 左上操作エリア */
+#leftControls {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    z-index: 260;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 180px;
+    max-height: none;
+    overflow: visible;
+}
+
+/* コントロールボタン */
+.ctrl-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 8px 0;
+    border: 2px solid #ffffff;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: center;
+    transition: all 0.2s;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+.ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#characterName {
+    width: 100%;
+    min-width: 0;
+    color: #ffffff;
+    font-family: "M PLUS 1p", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+    font-size: 23px;
+    line-height: 1.25;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-align: center;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+
+#personalPage {
+    font-family: "Quicksand", Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+}
+
+/* 左下時計エリア */
+#clockArea {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    z-index: 120;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: #ffffff;
+    font-family: "Quicksand", sans-serif;
+    font-weight: 300;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 0, 0, 0.4);
+    width: 230px;
+}
+
+#clockTime {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Quicksand", sans-serif;
+    font-size: 78px;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.68), 0 0 10px rgba(0,0,0,0.35);
+}
+#clockHour, #clockMinute {
+    display: block;
+    line-height: 1;
+}
+#clockColon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    width: 0.34em;
+    height: 1em;
+    line-height: 1;
+    margin: 0 0.015em;
+    padding: 0;
+    transform: translateY(-0.035em);
+    opacity: 1;
+    color: inherit;
+    text-shadow: inherit;
+    transition: opacity 0.06s linear;
+}
+#clockColon.off { opacity: 0; }
+#clockDate {
+    font-family: "Quicksand", sans-serif;
+    font-size: 28px;
+    font-weight: 300;
+    margin-top: 10px;
+    margin-bottom: 12px;
+    letter-spacing: 3px;
+    line-height: 1.0;
+    white-space: nowrap;
+}
+
+#clockDay {
+    font-family: "Quicksand", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 6px 0;
+    border: 2px solid #ffffff;
+    border-radius: 30px;
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* 右上メニューボタン */
+#openMenu {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    z-index: 260;
+    width: 70px;
+    height: 70px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s;
+    line-height: 1;
+    padding: 0;
+}
+#openMenu:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+
+#diceButton {
+    position: absolute;
+    right: 30px;
+    bottom: 112px;
+    z-index: 260;
+    width: 70px;
+    height: 70px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    padding: 0;
+}
+
+#diceButton img {
+    display: block;
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+
+#diceButton:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* メニュー画面 */
+#menu {
+    position: absolute;
+    inset: 0;
+    z-index: 500;
+    display: none;
+    overflow-y: auto;
+    padding: 60px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #ffffff;
+    cursor: pointer;
+}
+#menu h1, #menu h2, #menu p, #menu span {
+    margin-top: 0;
+    color: #ffffff;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.menu-buttons {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    display: flex;
+    gap: 12px;
+    margin: 0;
+    z-index: 510;
+}
+.menu-button {
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    padding: 10px 24px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s;
+}
+.menu-button:hover { background: rgba(255, 255, 255, 0.35); }
+
+/* キャラクター一覧リスト */
+.list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 30px;
+    align-items: center;
+}
+
+.card {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* キャラクターアイコン (112x112px) */
+.card-character-thumb {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    overflow: hidden;
+    border-radius: 24px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    background: rgba(255, 255, 255, 0.1);
+}
+.card:hover .card-character-thumb {
+    transform: scale(1.08);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.card-character-image {
+    display: block;
+    position: absolute;
+    max-width: none;
+}
+
+
+.card-birthday-cake {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    z-index: 6;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.55));
+}
+
+/* 背景選択セクション */
+#backgroundSection {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#backgroundList {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    scroll-behavior: smooth;
+}
+
+#backgroundList::-webkit-scrollbar {
+    height: 10px;
+}
+#backgroundList::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+#backgroundList::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 5px;
+}
+
+.bg-card {
+    flex: 0 0 240px;
+    height: 100%;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 0;
+    box-shadow: 4px 0 12px rgba(0,0,0,0.3);
+    transition: flex-basis 0.25s ease, filter 0.2s ease;
+}
+
+.bg-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+}
+
+.bg-card:hover {
+    flex-basis: 320px;
+    filter: brightness(1.15);
+}
+
+/* 誕生日表示 */
+#birthdayArea { margin-bottom: 40px; }
+.birthday-empty { color: rgba(255,255,255,0.7); }
+.birthday-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 30px;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+.birthday-item:hover { background: rgba(255, 255, 255, 0.35); }
+.birthday-cake-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    flex: 0 0 auto;
+    margin-right: 9px;
+}
+
+
+@media (max-width: 768px), (max-aspect-ratio: 82/100) {
+    #leftControls {
+        left: var(--mobile-left, 30px);
+        top: 28px;
+        width: 220px;
+        gap: 10px;
+        overflow: visible;
+    }
+    .ctrl-btn {
+        font-size: 25px;
+        padding: 10px 8px;
+    }
+    #personalPage {
+        background: rgba(255, 255, 255, 0.94);
+        color: #111111;
+        border-color: rgba(255, 255, 255, 0.98);
+        text-shadow: none;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    #personalPage:hover {
+        background: #ffffff;
+    }
+    #characterName {
+        font-size: 26px;
+    }
+    #openMenu {
+        right: var(--mobile-right, 30px);
+        bottom: 18px;
+        width: 70px;
+        height: 70px;
+        font-size: 32px;
+    }
+    #diceButton {
+        right: var(--mobile-right, 30px);
+        bottom: 100px;
+        width: 70px;
+        height: 70px;
+    }
+    #diceButton img {
+        width: 34px;
+        height: 34px;
+    }
+    #clockArea {
+        left: var(--mobile-left, 30px);
+        bottom: 28px;
+        width: 230px;
+    }
+    #clockTime { font-size: 78px; }
+    #clockDate { font-size: 28px; }
+    #clockDay { font-size: 26px; }
+    .menu-buttons {
+        right: var(--mobile-right, 30px);
+        bottom: 28px;
+    }
+    #menu {
+        padding: 34px var(--mobile-right, 30px) 110px var(--mobile-left, 30px);
+    }
+    .menu-button {
+        font-size: 25px;
+        padding: 12px 24px;
+    }
+    #backgroundSection {
+        left: var(--mobile-content-left, 0px);
+        right: auto;
+        width: var(--mobile-content-width, 1920px);
+        height: 100%;
+    }
+    #backgroundList {
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 10px;
+        padding: 0 0 120px 0;
+        scroll-behavior: smooth;
+    }
+    #backgroundList::-webkit-scrollbar {
+        width: 10px;
+        height: 0;
+    }
+    .bg-card {
+        flex: 0 0 210px;
+        width: 100%;
+        height: 210px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.28);
+    }
+    .bg-card:hover {
+        flex-basis: 210px;
+    }
+}
+
+.hidden { display: none !important; }
+
+/* 時計コロン：実秒に同期して明滅 */
+.clock-colon {
+    display: inline-block;
+    width: 0.32em;
+    height: 0.78em;
+    position: relative;
+    vertical-align: 0.02em;
+    margin: 0 0.04em;
+    opacity: 1;
+}
+.clock-colon::before,.clock-colon::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 0.105em;
+    height: 0.105em;
+    margin-left: -0.0525em;
+    border-radius: 50%;
+    background: currentColor;
+}
+.clock-colon::before { top: 22%; }
+.clock-colon::after { bottom: 22%; }
+.clock-colon.colon-off { opacity: 0; }
+/* タップ：最初のホワッを短くした版 */
+55%  { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
+}
+.character-name-cake {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    flex: 0 0 auto;
+    margin-right: 5px;
+}
+#characterName.birthday-name {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+
+/* タップ：指を置いた瞬間に出る高速サークル */
+.tap-flash {
+    position: absolute;
+    z-index: 190;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,1);
+    background: rgba(255,255,255,0.16);
+    box-shadow: 0 0 8px rgba(0,0,0,0.28);
+    transform: translate(-50%, -50%) scale(0.48);
+    pointer-events: none;
+    animation: tapFlash 170ms ease-out forwards;
+}
+@keyframes tapFlash {
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.48); }
+    60%  { opacity: 0.72; transform: translate(-50%, -50%) scale(0.92); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.14); }
+}
+
+
+
+
+
+
+
+
+/* 連打ボイス専用：大きく広がる衝撃リング */
+.rapid-impact {
+    position: absolute;
+    z-index: 195;
+    width: 54px;
+    height: 54px;
+    border: 3px solid rgba(255,255,255,0.98);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,0.18),
+        0 0 18px rgba(255,255,255,0.55);
+    transform: translate(-50%, -50%) scale(0.50);
+    pointer-events: none;
+    animation: rapidImpact 240ms cubic-bezier(.10,.70,.20,1) forwards;
+}
+
+@keyframes rapidImpact {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.50);
+    }
+    45% {
+        opacity: 0.88;
+        transform: translate(-50%, -50%) scale(1.35);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2.75);
+    }
+}
+
+
+
+
+
+/* ===== 衣装変更：PC PAGE と同系統 / custom dropdown ===== */
+#costumeSelectWrap{
+    position: relative;
+    display: none;
+    width: 100%;
+    min-width: 0;
+    z-index: 280;
+}
+#costumeSelect{
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    padding: 8px 18px 8px 38px;
+    border: 2px solid #ffffff;
+    border-radius: 30px;
+    outline: none;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-family: "M PLUS 1p", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+    font-size: 19px;
+    line-height: 1.2;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+    box-shadow: 0 4px 10px rgba(0,0,0,.15);
+    transition: background .2s;
+}
+#costumeSelect::before{
+    content: "▼";
+    position: absolute;
+    left: 17px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ffffff;
+    font-size: 15px;
+    line-height: 1;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+#costumeSelect:hover,
+#costumeSelect:focus,
+#costumeSelect[aria-expanded="true"]{
+    background: rgba(255,255,255,.3);
+}
+#costumeSelectLabel{
+    display:block;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+#costumeSelectMenu{
+    position:absolute;
+    left:0;
+    top:calc(100% + 7px);
+    width:100%;
+    display:none;
+    flex-direction:column;
+    gap:5px;
+    padding:6px;
+    border:1px solid rgba(255,255,255,.45);
+    border-radius:18px;
+    background:rgba(20,24,30,.58);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    box-shadow:0 10px 28px rgba(0,0,0,.28);
+}
+#costumeSelectMenu.open{display:flex}
+.costume-option{
+    width:100%;
+    min-height:36px;
+    padding:7px 12px;
+    border:1px solid rgba(255,255,255,.42);
+    border-radius:18px;
+    background:rgba(255,255,255,.12);
+    color:#fff;
+    font-family:"M PLUS 1p","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+    font-size:17px;
+    font-weight:600;
+    text-align:center;
+    cursor:pointer;
+    text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+.costume-option:hover,
+.costume-option:focus,
+.costume-option.active{
+    background:rgba(255,255,255,.30);
+    outline:none;
+}
+
+/* ===== 続きの選択肢：台詞吹き出しに近いデザイン ===== */
+#choiceBox{
+    position: absolute;
+    z-index: 300;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    width: 820px;
+    pointer-events: auto;
+}
+.choice-btn{
+    width:100%;
+    min-height:100px;
+    padding:24px 34px;
+    border:3px solid rgba(255,255,255,.45);
+    border-radius:22px;
+    background:linear-gradient(135deg,rgba(22,24,30,.88) 0%,rgba(10,11,15,.92) 70%,rgba(35,40,55,.84) 100%);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    color:#f0f2f5;
+    font-size:42px;
+    line-height:1.45;
+    font-weight:500;
+    letter-spacing:.04em;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 18px 42px rgba(0,0,0,.38),inset 0 2px 0 rgba(255,255,255,.12);
+    transition:transform .12s ease,background .12s ease;
+}
+.choice-btn:hover,
+.choice-btn:focus{
+    background: linear-gradient(135deg,rgba(42,46,56,.90),rgba(18,20,27,.93) 70%,rgba(47,54,72,.86));
+    outline: none;
+}
+
+@media (max-width: 768px), (max-aspect-ratio: 82/100) {
+    #costumeSelect{
+        font-size: 22px;
+        padding: 9px 18px 9px 42px;
+    }
+    #costumeSelect::before{
+        left: 20px;
+        font-size: 17px;
+    }
+    .costume-option{
+        font-size:20px;
+        min-height:42px;
+    }
+    .choice-btn{
+        font-size: 46px;
+        min-height: 112px;
+        padding: 26px 34px;
+    }
+}
+
+/* 衣装プルダウン：左上UIの外へ開いても切らない */
+#leftControls{overflow:visible!important}
+#costumeSelectWrap{overflow:visible!important}
+#costumeSelectMenu{
+    z-index:999!important;
+    pointer-events:auto!important;
+}
+.costume-option{
+    pointer-events:auto!important;
+}
+
+
+/* ===== 選択肢：大きめ中央ボタン ===== */
+#choiceBox{
+    max-width:calc(100% - 80px);
+    gap:18px!important;
+}
+.choice-btn{
+    min-height:100px!important;
+    padding:24px 34px!important;
+    font-size:42px!important;
+    border-width:3px!important;
+    border-radius:22px!important;
+}
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #choiceBox{
+        gap:20px!important;
+    }
+    .choice-btn{
+        min-height:112px!important;
+        padding:26px 34px!important;
+        font-size:46px!important;
+    }
+}
+
+
+/* ===== 選択肢：台詞に近い細さ + 左右フェード ===== */
+#choiceBox{
+    width:720px!important;
+    max-width:calc(100% - 100px)!important;
+    gap:12px!important;
+}
+
+.choice-btn{
+    position:relative!important;
+    overflow:hidden!important;
+    min-height:64px!important;
+    padding:12px 34px!important;
+
+    /* 左右へ行くほど透明になるガラス帯 */
+    background:
+        linear-gradient(
+            90deg,
+            rgba(10,11,15,0) 0%,
+            rgba(14,16,22,.34) 10%,
+            rgba(14,16,22,.78) 26%,
+            rgba(10,11,15,.90) 50%,
+            rgba(14,16,22,.78) 74%,
+            rgba(14,16,22,.34) 90%,
+            rgba(10,11,15,0) 100%
+        )!important;
+
+    border:none!important;
+    border-radius:0!important;
+    box-shadow:
+        0 10px 26px rgba(0,0,0,.20),
+        inset 0 1px 0 rgba(255,255,255,.07)!important;
+
+    color:#f0f2f5!important;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!important;
+    font-size:28px!important;
+    line-height:1.45!important;
+    font-weight:400!important;
+    letter-spacing:.05em!important;
+    text-align:center!important;
+
+    backdrop-filter:blur(10px)!important;
+    -webkit-backdrop-filter:blur(10px)!important;
+}
+
+.choice-btn::before,
+.choice-btn::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:22%;
+    height:1px;
+    transform:translateY(-50%);
+    pointer-events:none;
+    opacity:.42;
+}
+
+.choice-btn::before{
+    left:0;
+    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.55));
+}
+
+.choice-btn::after{
+    right:0;
+    background:linear-gradient(90deg,rgba(255,255,255,.55),rgba(255,255,255,0));
+}
+
+.choice-btn:hover,
+.choice-btn:focus{
+    background:
+        linear-gradient(
+            90deg,
+            rgba(18,22,30,0) 0%,
+            rgba(34,40,54,.42) 10%,
+            rgba(45,52,70,.82) 26%,
+            rgba(35,40,55,.94) 50%,
+            rgba(45,52,70,.82) 74%,
+            rgba(34,40,54,.42) 90%,
+            rgba(18,22,30,0) 100%
+        )!important;
+    transform:scale(1.015)!important;
+    outline:none!important;
+}
+
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #choiceBox{
+        width:760px!important;
+        max-width:calc(100% - 72px)!important;
+        gap:14px!important;
+    }
+
+    .choice-btn{
+        min-height:72px!important;
+        padding:14px 30px!important;
+        font-size:34px!important;
+        font-weight:400!important;
+    }
+}
+
+
+/* ===== 選択肢：現在デザインの約1.3倍 ===== */
+#choiceBox{
+    width:936px!important;
+    max-width:calc(100% - 100px)!important;
+    gap:16px!important;
+}
+.choice-btn{
+    min-height:83px!important;
+    padding:16px 44px!important;
+    font-size:36px!important;
+    font-weight:400!important;
+}
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #choiceBox{
+        width:988px!important;
+        max-width:calc(100% - 72px)!important;
+        gap:18px!important;
+    }
+    .choice-btn{
+        min-height:94px!important;
+        padding:18px 39px!important;
+        font-size:44px!important;
+        font-weight:400!important;
+    }
+}
+
+
+/* ===== 名前横の誕生日ケーキ：確実に7px固定 ===== */
+#characterName img.character-name-cake{
+    width:30px!important;
+    height:30px!important;
+    min-width:30px!important;
+    max-width:30px!important;
+    min-height:30px!important;
+    max-height:30px!important;
+    flex:0 0 30px!important;
+    object-fit:contain!important;
+}
+
+
+
+/* ===== SARSCOC NEWS：新幹線ニュース風テロップ ===== */
+#newsTicker{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:30px;
+    z-index:250;
+    display:none;
+    align-items:center;
+    overflow:hidden;
+    background:linear-gradient(90deg,rgba(9,13,18,.80),rgba(15,22,30,.70),rgba(9,13,18,.80));
+    border-bottom:1px solid rgba(255,255,255,.24);
+    box-shadow:0 3px 12px rgba(0,0,0,.15);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    color:#f4f8fb;
+    font-family:"M PLUS 1p","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+    font-size:17px;
+    line-height:1;
+    letter-spacing:.045em;
+    cursor:default;
+    user-select:none;
+    pointer-events:auto;
+}
+#newsTickerLabel{
+    position:relative;
+    z-index:2;
+    flex:0 0 auto;
+    height:100%;
+    display:flex;
+    align-items:center;
+    padding:0 16px 0 18px;
+    border-right:1px solid rgba(255,255,255,.24);
+    background:rgba(255,255,255,.10);
+    font-family:"Quicksand","M PLUS 1p",sans-serif;
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:.16em;
+    white-space:nowrap;
+    text-shadow:0 1px 3px rgba(0,0,0,.65);
+}
+#newsTickerViewport{
+    position:relative;
+    flex:1 1 auto;
+    min-width:0;
+    height:100%;
+    overflow:hidden;
+    mask-image:linear-gradient(90deg,transparent 0,#000 24px,#000 calc(100% - 24px),transparent 100%);
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 24px,#000 calc(100% - 24px),transparent 100%);
+}
+#newsTickerTrack{
+    position:absolute;
+    left:0;
+    top:0;
+    height:100%;
+    width:max-content;
+    display:flex;
+    align-items:center;
+    will-change:transform;
+    animation:newsTickerFlow 38s linear infinite;
+}
+.news-ticker-set{
+    display:inline-flex;
+    align-items:center;
+    height:100%;
+    flex:0 0 auto;
+    white-space:nowrap;
+    padding-right:72px;
+}
+.news-ticker-item{
+    display:inline-flex;
+    align-items:center;
+    height:100%;
+    white-space:nowrap;
+    color:#f4f8fb;
+    text-decoration:none;
+    text-shadow:0 1px 3px rgba(0,0,0,.68);
+}
+a.news-ticker-item{
+    cursor:pointer;
+    border-bottom:1px solid transparent;
+    transition:color .14s ease,border-color .14s ease,background .14s ease;
+}
+a.news-ticker-item:hover,
+a.news-ticker-item:focus-visible{
+    color:#ffffff;
+    border-bottom-color:rgba(255,255,255,.85);
+    background:rgba(255,255,255,.08);
+    outline:none;
+}
+.news-ticker-sep{
+    display:inline-flex;
+    align-items:center;
+    height:100%;
+    margin:0 22px;
+    opacity:.68;
+    font-size:11px;
+}
+#newsTicker:hover #newsTickerTrack,
+#newsTicker:focus-within #newsTickerTrack{
+    animation-play-state:paused;
+}
+@keyframes newsTickerFlow{
+    from{transform:translateX(0)}
+    to{transform:translateX(-50%)}
+}
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #newsTicker{
+        height:34px;
+        font-size:20px;
+    }
+    #newsTickerLabel{
+        display:none;
+    }
+    .news-ticker-sep{
+        margin:0 24px;
+    }
+}
+@media (prefers-reduced-motion:reduce){
+    #newsTickerTrack{animation:none!important;position:relative;overflow-x:auto;max-width:100%}
+}
+
+
+/* ===== テロップ最終配置：曜日クリックで収納 ⇄ びょーっと展開 ===== */
+#clockArea{
+    overflow:visible;
+}
+#clockBottomRow{
+    display:flex;
+    align-items:center;
+    gap:0;
+    width:max-content;
+    align-self:flex-start;
+    pointer-events:none;
+    isolation:isolate;
+}
+
+/* 曜日は短いカプセル。テロップの開閉ボタンも兼ねる */
+#clockBottomRow #clockDay{
+    position:relative;
+    z-index:3;
+    width:150px;
+    min-width:150px;
+    flex:0 0 150px;
+    margin:0;
+    cursor:pointer;
+    pointer-events:auto;
+    user-select:none;
+    transition:background .18s ease, transform .16s ease, box-shadow .18s ease;
+}
+#clockBottomRow #clockDay:hover,
+#clockBottomRow #clockDay:focus-visible{
+    background:rgba(255,255,255,.26);
+    outline:none;
+}
+#clockBottomRow #clockDay:active{
+    transform:scale(.975);
+}
+
+/* 黒帯は曜日の後ろへ隠れていて、open時だけ右へ伸びる */
+#clockBottomRow #newsTicker{
+    position:relative;
+    z-index:2;
+    top:auto;
+    left:auto;
+    display:flex!important;
+    width:0;
+    height:45px;
+    flex:0 0 auto;
+    margin-left:-12px;
+    overflow:hidden;
+    border:0 solid rgba(255,255,255,.90);
+    border-radius:0 30px 30px 0;
+    background:rgba(7,9,12,.90);
+    box-shadow:none;
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    font-size:19px;
+    opacity:0;
+    transform:scaleX(.02);
+    transform-origin:left center;
+    pointer-events:none;
+    transition:
+        width .58s cubic-bezier(.16,1,.3,1),
+        transform .58s cubic-bezier(.16,1,.3,1),
+        opacity .12s ease,
+        border-width .12s ease,
+        box-shadow .18s ease;
+}
+
+#clockBottomRow.ticker-open #newsTicker{
+    width:1580px;
+    border-width:2px;
+    opacity:1;
+    transform:scaleX(1);
+    box-shadow:0 4px 12px rgba(0,0,0,.24);
+    pointer-events:auto;
+}
+#clockBottomRow #newsTickerLabel{
+    display:none;
+}
+#clockBottomRow #newsTickerViewport{
+    width:100%;
+    height:100%;
+}
+#clockBottomRow #newsTickerTrack{
+    height:100%;
+}
+
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #clockBottomRow #clockDay{
+        width:150px;
+        min-width:150px;
+        flex-basis:150px;
+        margin:0;
+    }
+    #clockBottomRow #newsTicker{
+        height:46px;
+        margin-left:-12px;
+        font-size:21px;
+    }
+    #clockBottomRow.ticker-open #newsTicker{
+        width:calc(var(--mobile-content-width, 1920px) - 302px);
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    #clockBottomRow #newsTicker{
+        transition:none!important;
+    }
+}
+
+
+
+/* ===== 2026-08-12 テロップ接合修正 + スマホUI白黒化 ===== */
+/* 曜日カプセルの下へ黒帯を潜り込ませない。接するだけにする */
+#clockBottomRow #newsTicker{
+    margin-left:0 !important;
+    background:#080a0d !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+}
+#clockBottomRow.ticker-open #newsTicker{
+    width:1540px;
+    border-left-width:0;
+}
+
+/* スマホ：丸・カプセル系UIは「透けなし白 + 黒文字」 */
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    .ctrl-btn,
+    #costumeSelect,
+    #clockBottomRow #clockDay,
+    #openMenu,
+    #diceButton,
+    .menu-button,
+    .birthday-item,
+    .costume-option{
+        background:#ffffff !important;
+        color:#111111 !important;
+        border-color:#ffffff !important;
+        text-shadow:none !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+    }
+
+    .ctrl-btn:hover,
+    #costumeSelect:hover,
+    #costumeSelect:focus,
+    #costumeSelect[aria-expanded="true"],
+    #clockBottomRow #clockDay:hover,
+    #clockBottomRow #clockDay:focus-visible,
+    #openMenu:hover,
+    #diceButton:hover,
+    .menu-button:hover,
+    .birthday-item:hover,
+    .costume-option:hover,
+    .costume-option:focus,
+    .costume-option.active{
+        background:#ffffff !important;
+        color:#111111 !important;
+    }
+
+    #costumeSelect::before{
+        color:#111111 !important;
+        text-shadow:none !important;
+    }
+
+    #clockBottomRow #newsTicker{
+        margin-left:0 !important;
+        background:#080a0d !important;
+    }
+    #clockBottomRow.ticker-open #newsTicker{
+        /* 右下の☰ボタンより十分手前で止める */
+        width:calc(var(--mobile-content-width, 1920px) - 340px);
+        border-left-width:0;
+    }
+}
+
+
+
+/* ===== 2026-08-12 テロップ接合：逆弧カット ===== */
+/*
+   曜日カプセルと黒帯を少し重ねつつ、黒帯の左端そのものを
+   半円状に透明にえぐる。これで「（ WED ））黒帯」の噛み合わせになる。
+*/
+#clockBottomRow #newsTicker{
+    /* 曜日の右端へ少し食い込ませる */
+    margin-left:-20px !important;
+
+    /* 左端中央を半円状に透明カット（背景画像がそのまま見える） */
+    -webkit-mask-image:
+        radial-gradient(circle 27px at 0 50%, transparent 0 25px, #000 26px);
+    mask-image:
+        radial-gradient(circle 27px at 0 50%, transparent 0 25px, #000 26px);
+    -webkit-mask-repeat:no-repeat;
+    mask-repeat:no-repeat;
+    -webkit-mask-size:100% 100%;
+    mask-size:100% 100%;
+
+    border-left-width:0 !important;
+    border-radius:0 30px 30px 0 !important;
+}
+
+/* テロップ本文は逆弧に食い込まないよう少し右へ */
+#clockBottomRow #newsTickerViewport{
+    padding-left:18px;
+}
+
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #clockBottomRow #newsTicker{
+        margin-left:-21px !important;
+        -webkit-mask-image:
+            radial-gradient(circle 28px at 0 50%, transparent 0 26px, #000 27px);
+        mask-image:
+            radial-gradient(circle 28px at 0 50%, transparent 0 26px, #000 27px);
+    }
+    #clockBottomRow #newsTickerViewport{
+        padding-left:19px;
+    }
+}
+
+
+/* ===== 2026-08-12 曜日UI：元のサイズ・元の位置を完全維持 ===== */
+/*
+   テロップのために曜日側を縮めない。
+   元の #clockArea (230px) と #clockDay (width:100%) をそのまま基準にする。
+   テロップだけを右側へ伸縮させる。
+*/
+#clockBottomRow{
+    align-self:flex-start !important;
+}
+#clockBottomRow #clockDay{
+    width:230px !important;
+    min-width:230px !important;
+    max-width:230px !important;
+    flex:0 0 230px !important;
+    margin:0 !important;
+    padding:6px 0 !important;
+    font-size:26px !important;
+    line-height:1.1 !important;
+    border-width:2px !important;
+    border-radius:30px !important;
+}
+
+/* スマホでも曜日の寸法・位置は元UI基準のまま。色だけ白黒化を適用 */
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #clockBottomRow #clockDay{
+        width:230px !important;
+        min-width:230px !important;
+        max-width:230px !important;
+        flex-basis:230px !important;
+        padding:6px 0 !important;
+        font-size:26px !important;
+    }
+    /* 230pxの曜日から始まる分だけ、テロップは☰の手前で止まる長さに調整 */
+    #clockBottomRow.ticker-open #newsTicker{
+        width:calc(var(--mobile-content-width, 1920px) - 340px) !important;
+    }
+}
+
+
+
+/* ===== 2026-08-12 曜日フォント統一 + LED風テロップ + 微透過 ===== */
+/* 曜日はPC PAGEと同じQuicksand / weight / letter-spacingへ。寸法と位置は維持。 */
+#clockBottomRow #clockDay{
+    font-family:"Quicksand", Arial, sans-serif !important;
+    font-weight:500 !important;
+    letter-spacing:.08em !important;
+}
+
+/* 難しい漢字を欠けさせないため、本文は日本語対応フォントのまま電光掲示板風にする */
+#clockBottomRow #newsTicker{
+    background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.055) 1px, transparent 1.15px),
+        rgba(8,10,13,.80) !important;
+    background-size:4px 4px, auto !important;
+    backdrop-filter:blur(5px) !important;
+    -webkit-backdrop-filter:blur(5px) !important;
+}
+#clockBottomRow .news-ticker-item{
+    font-family:"Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif !important;
+    font-weight:500 !important;
+    letter-spacing:.055em !important;
+    text-shadow:
+        0 0 4px rgba(255,255,255,.23),
+        0 1px 2px rgba(0,0,0,.88) !important;
+}
+#clockBottomRow .news-ticker-sep{
+    text-shadow:0 0 4px rgba(255,255,255,.18) !important;
+}
+
+
+
+
+
+/* ===== 2026-08-12 読みやすさ優先の電光掲示板文字 ===== */
+#clockBottomRow .news-ticker-item,
+#clockBottomRow .news-ticker-sep{
+    color:#f7f7f2 !important;
+    -webkit-text-fill-color:#f7f7f2 !important;
+    background:none !important;
+    filter:none !important;
+    font-family:"DotGothic16","Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif !important;
+    font-weight:400 !important;
+    letter-spacing:.035em !important;
+    text-shadow:
+        0 0 2px rgba(255,255,255,.20),
+        0 1px 2px rgba(0,0,0,.88) !important;
+}
+#clockBottomRow a.news-ticker-item:hover,
+#clockBottomRow a.news-ticker-item:focus-visible{
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    background:rgba(255,255,255,.05) !important;
+    border-bottom-color:rgba(255,255,255,.65) !important;
+    filter:none !important;
+}
+
+
+
+/* ===== 2026-08-12 スマホ：選択肢を画面内に収める ===== */
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #choiceBox{
+        /* スマホで実際に見えているゲーム幅を基準にする */
+        width:min(720px, calc(var(--mobile-content-width, 800px) - 120px)) !important;
+        max-width:calc(var(--mobile-content-width, 800px) - 120px) !important;
+        gap:10px !important;
+    }
+
+    .choice-btn{
+        min-height:68px !important;
+        padding:10px 26px !important;
+        font-size:34px !important;
+        line-height:1.35 !important;
+        font-weight:400 !important;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="game">
+        <img id="background" alt="">
+        <video id="backgroundVideo" autoplay muted loop playsinline preload="auto"></video>
+        <img id="character" alt="">
+        <img id="frame" alt="">
+
+
+        <!-- 左側操作コントロール -->
+        <div id="leftControls">
+            <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC PAGE</a>
+            <div id="characterName"></div>
+            <div id="costumeSelectWrap" title="衣装変更">
+                <button id="costumeSelect" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span id="costumeSelectLabel">通常</span>
+                </button>
+                <div id="costumeSelectMenu" role="listbox" aria-label="衣装変更"></div>
+            </div>
+        </div>
+
+        <!-- 左下時計エリア -->
+        <div id="clockArea">
+            <div id="clockTime"><span id="clockHour">--</span><span id="clockColon">:</span><span id="clockMinute">--</span></div>
+            <div id="clockDate">----/-/--</div>
+            <div id="clockBottomRow">
+                <div id="clockDay" role="button" tabindex="0" aria-expanded="false" aria-controls="newsTicker" title="ニュースを収納 / 表示">---</div>
+                <!-- 曜日の横：新幹線ニュース風テロップ -->
+                <div id="newsTicker" aria-label="SARSCOC NEWS">
+                    <div id="newsTickerLabel">SARSCOC NEWS</div>
+                    <div id="newsTickerViewport">
+                        <div id="newsTickerTrack"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右上メニューボタン -->
+        <button id="diceButton" type="button" aria-label="サイコロ" title="サイコロ">
+            <img src="icon/dice.png" alt="">
+        </button>
+        <button id="openMenu" type="button" aria-label="メニュー">☰</button>
+        <div id="message"><span id="messageText" class="message-text"></span></div>
+        <div id="choiceBox" aria-label="選択肢"></div>
+
+        <div id="menu">
+            <section id="birthdayArea" class="hidden">
+                <div id="birthdayList" class="list"></div>
+            </section>
+
+            <section id="characterSection">
+                <div id="characterList" class="list"></div>
+            </section>
+
+            <section id="backgroundSection" class="hidden">
+                <div id="backgroundList"></div>
+            </section>
+
+            <div class="menu-buttons">
+                <button class="menu-button" id="characterMenuButton" type="button">Character</button>
+                <button class="menu-button" id="backgroundMenuButton" type="button">Background</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* 画面全体の自動レスポンシブスケール処理（1920x1080基準） */
+function resizeGame() {
+    const container = document.getElementById("game-container");
+    const baseWidth = 1920;
+    const baseHeight = 1080;
+    const mobile = window.innerWidth <= 768 || window.innerWidth / window.innerHeight < 0.82;
+
+    if (mobile) {
+        // スマホは16:9全体表示ではなく、中央を縦長寄りに切り取る。
+        // 高さは横幅の約1.35倍までにし、完全な9:16にはしない。
+        const sceneHeight = Math.min(window.innerHeight, window.innerWidth * 1.35);
+        const scale = sceneHeight / baseHeight;
+        const visibleBaseWidth = Math.min(baseWidth, window.innerWidth / scale);
+        const leftBound = (baseWidth - visibleBaseWidth) / 2;
+        const rightBound = leftBound + visibleBaseWidth;
+
+        window.mobileLayout = {
+            active: true,
+            scale,
+            leftBound,
+            rightBound,
+            topBound: 0,
+            bottomBound: baseHeight,
+            characterScale: 1,
+            characterYOffset: 0
+        };
+
+        document.documentElement.style.setProperty("--mobile-left", `${leftBound + 28}px`);
+        document.documentElement.style.setProperty("--mobile-right", `${baseWidth - rightBound + 36}px`);
+        document.documentElement.style.setProperty("--mobile-content-left", `${leftBound}px`);
+        document.documentElement.style.setProperty("--mobile-content-width", `${visibleBaseWidth}px`);
+
+        container.style.transformOrigin = "center center";
+        container.style.transform = `scale(${scale})`;
+    } else {
+        const scaleX = window.innerWidth / baseWidth;
+        const scaleY = window.innerHeight / baseHeight;
+        const scale = Math.min(scaleX, scaleY);
+
+        window.mobileLayout = {
+            active: false,
+            scale,
+            leftBound: 0,
+            rightBound: baseWidth,
+            topBound: 0,
+            bottomBound: baseHeight,
+            characterScale: 1,
+            characterYOffset: 0
+        };
+
+        document.documentElement.style.setProperty("--mobile-left", "30px");
+        document.documentElement.style.setProperty("--mobile-right", "30px");
+        document.documentElement.style.setProperty("--mobile-content-left", "0px");
+        document.documentElement.style.setProperty("--mobile-content-width", "1920px");
+        container.style.transformOrigin = "center center";
+        container.style.transform = `scale(${scale})`;
+    }
+if (data) {
+        loadCharacterImage();
+    }
+}
+
+
+/* DOM要素 */
+const game = document.getElementById("game");
+const background = document.getElementById("background");
+const backgroundVideo = document.getElementById("backgroundVideo");
+const character = document.getElementById("character");
+const frame = document.getElementById("frame");
+const message = document.getElementById("message");
+const messageText = document.getElementById("messageText");
+const menu = document.getElementById("menu");
+const personalPage = document.getElementById("personalPage");
+const characterName = document.getElementById("characterName");
+const costumeSelectWrap = document.getElementById("costumeSelectWrap");
+const costumeSelect = document.getElementById("costumeSelect");
+const costumeSelectLabel = document.getElementById("costumeSelectLabel");
+const costumeSelectMenu = document.getElementById("costumeSelectMenu");
+const choiceBox = document.getElementById("choiceBox");
+const birthdayArea = document.getElementById("birthdayArea");
+const birthdayList = document.getElementById("birthdayList");
+const characterList = document.getElementById("characterList");
+const backgroundList = document.getElementById("backgroundList");
+const characterSection = document.getElementById("characterSection");
+const backgroundSection = document.getElementById("backgroundSection");
+const characterMenuButton = document.getElementById("characterMenuButton");
+const backgroundMenuButton = document.getElementById("backgroundMenuButton");
+const clockDate = document.getElementById("clockDate");
+const clockTime = document.getElementById("clockTime");
+const clockHour = document.getElementById("clockHour");
+const clockMinute = document.getElementById("clockMinute");
+const clockColon = document.getElementById("clockColon");
+const clockDay = document.getElementById("clockDay");
+
+const newsTicker = document.getElementById("newsTicker");
+const newsTickerTrack = document.getElementById("newsTickerTrack");
+
+
+const diceButton = document.getElementById("diceButton");
+const diceImage = diceButton ? diceButton.querySelector("img") : null;
+
+function updateDiceIconForViewport() {
+    if (!diceImage) return;
+    const mobile = window.innerWidth <= 768 || window.innerWidth / window.innerHeight < 0.82;
+    const nextSrc = mobile ? "icon/diceblack.png" : "icon/dice.png";
+    if (diceImage.getAttribute("src") !== nextSrc) {
+        diceImage.src = nextSrc;
+    }
+}
+
+if (diceImage) {
+    diceImage.onerror = () => console.error(`サイコロアイコン読み込み失敗: ${diceImage.getAttribute("src")}`);
+}
+
+
+
+/* ===== SARSCOC NEWS テロップ =====
+   GitHub上の news-feed.json を読み込みます。
+   URL付きの項目だけクリック可能で、Notionの公開ページなどへ飛ばせます。
+   news-feed.json がまだ無い間は接続待機メッセージを表示します。
+*/
+const NEWS_FEED_URL = "news-feed.json";
+const NEWS_FALLBACK_ITEMS = [
+    { text: "Notion連携の初回更新待ちです" }
+];
+
+function normalizeNewsItems(payload) {
+    const raw = Array.isArray(payload) ? payload : payload?.items;
+    if (!Array.isArray(raw)) return [];
+    return raw
+        .map(item => {
+            if (typeof item === "string") return { text: item, url: "", separatorBefore: "✦" };
+            return {
+                text: String(item?.text ?? "").trim(),
+                url: String(item?.url ?? "").trim(),
+                separatorBefore: String(item?.separatorBefore ?? "✦").trim()
+            };
+        })
+        .filter(item => item.text);
+}
+
+function buildNewsTickerSet(items) {
+    const set = document.createElement("div");
+    set.className = "news-ticker-set";
+
+    items.forEach((item, index) => {
+        const separator = index === 0 ? "" : (item.separatorBefore || "✦");
+        if (separator) {
+            const sep = document.createElement("span");
+            sep.className = "news-ticker-sep";
+            sep.textContent = separator;
+            set.appendChild(sep);
+        }
+
+        const node = item.url ? document.createElement("a") : document.createElement("span");
+        node.className = "news-ticker-item";
+        node.textContent = item.text;
+
+        if (item.url) {
+            node.href = item.url;
+            node.target = "_blank";
+            node.rel = "noopener noreferrer";
+            node.title = "Notionページを開く";
+        }
+
+        set.appendChild(node);
+    });
+
+    if (items.length) {
+        const tail = document.createElement("span");
+        tail.className = "news-ticker-sep";
+        tail.textContent = "✦";
+        set.appendChild(tail);
+    }
+
+    return set;
+}
+
+function renderNewsTicker(items) {
+    if (!newsTicker || !newsTickerTrack) return;
+    const safeItems = items.length ? items : NEWS_FALLBACK_ITEMS;
+
+    newsTickerTrack.replaceChildren();
+    const firstSet = buildNewsTickerSet(safeItems);
+    const secondSet = buildNewsTickerSet(safeItems);
+    secondSet.setAttribute("aria-hidden", "true");
+    newsTickerTrack.append(firstSet, secondSet);
+    newsTicker.style.display = "flex";
+
+    requestAnimationFrame(() => {
+        const width = firstSet.getBoundingClientRect().width;
+        const seconds = Math.max(20, Math.min(90, width / 58));
+        newsTickerTrack.style.animationDuration = `${seconds}s`;
+    });
+}
+
+async function loadNewsTicker() {
+    try {
+        const response = await fetch(`${NEWS_FEED_URL}?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`news-feed.json ${response.status}`);
+        const payload = await response.json();
+        renderNewsTicker(normalizeNewsItems(payload));
+    } catch (error) {
+        console.info("SARSCOC NEWS: news-feed.json はまだ未接続です", error);
+        renderNewsTicker(NEWS_FALLBACK_ITEMS);
+    }
+}
+
+if (newsTicker) {
+    ["click", "pointerdown", "touchstart"].forEach(type => {
+        newsTicker.addEventListener(type, event => event.stopPropagation());
+    });
+}
+
+/* 曜日を押すと、黒いニュース帯が曜日の後ろから伸び縮みする */
+const clockBottomRow = document.getElementById("clockBottomRow");
+function setTickerOpen(open) {
+    if (!clockBottomRow || !clockDay) return;
+    clockBottomRow.classList.toggle("ticker-open", open);
+    clockDay.setAttribute("aria-expanded", open ? "true" : "false");
+}
+function toggleTicker(event) {
+    if (event) event.stopPropagation();
+    const open = !clockBottomRow?.classList.contains("ticker-open");
+    setTickerOpen(open);
+}
+if (clockDay) {
+    ["pointerdown", "touchstart"].forEach(type => {
+        clockDay.addEventListener(type, event => event.stopPropagation());
+    });
+    clockDay.addEventListener("click", toggleTicker);
+    clockDay.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleTicker(event);
+        }
+    });
+}
+setTickerOpen(true);
+
+/* 状態管理 */
+let characters = [];
+let backgrounds = [];
+let data = null;
+let currentBackground = null;
+let count = {};
+let lastClick = 0;
+let messageTimer = null;
+let activeContinuation = null;
+let currentBaseCharacter = null;
+let availableCostumes = [];
+const costumeCache = new Map();
+const RAPID_TIME = 400;
+
+/* 台詞の巡回状態
+   - specialLastCycle: 日付/期間は、通常台詞1周につき各1回だけ
+   - normalCycle: 通常台詞を全部話し終えるたびに +1
+   - poolStates: 各台詞群を重複少なく巡回させる
+*/
+let dialogueState = null;
+
+function resetDialogueState() {
+    dialogueState = {
+        normalCycle: 0,
+        normalRounds: 0,
+        normalOrder: [],
+        normalPos: 0,
+        specialLastCycle: {
+            date: -1,
+            period: -1
+        },
+        poolStates: {}
+    };
+}
+
+function shuffledIndices(length) {
+    const order = Array.from({ length }, (_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+}
+
+function takeBalancedTalk(pool, key) {
+    if (!Array.isArray(pool) || pool.length === 0) return null;
+    if (!dialogueState) resetDialogueState();
+
+    let state = dialogueState.poolStates[key];
+    if (!state || state.length !== pool.length) {
+        state = {
+            length: pool.length,
+            round: 0,
+            pos: 0,
+            order: Array.from({ length: pool.length }, (_, i) => i)
+        };
+        dialogueState.poolStates[key] = state;
+    }
+
+    if (state.pos >= state.order.length) {
+        state.round++;
+        state.pos = 0;
+        // 1周目以降は順番をシャッフル。ただし同じ台詞ばかりにならない。
+        state.order = shuffledIndices(pool.length);
+    }
+
+    const talk = pool[state.order[state.pos]];
+    state.pos++;
+    return talk;
+}
+
+function canUseSpecial(kind) {
+    if (!dialogueState) resetDialogueState();
+    return dialogueState.specialLastCycle[kind] !== dialogueState.normalCycle;
+}
+
+function markSpecialUsed(kind) {
+    if (!dialogueState) resetDialogueState();
+    dialogueState.specialLastCycle[kind] = dialogueState.normalCycle;
+}
+
+/* 初期化 */
+async function init() {
+    startClock();
+    loadNewsTicker();
+
+    let characterError = null;
+    let backgroundError = null;
+
+    try {
+        await loadCharacters();
+    } catch (error) {
+        characterError = error;
+        console.error("キャラクター初期化エラー:", error);
+    }
+
+    try {
+        await loadBackgrounds();
+        setupBackground();
+        setupBackgroundMenu();
+    } catch (error) {
+        backgroundError = error;
+        backgrounds = [];
+        console.error("背景初期化エラー:", error);
+    }
+
+    if (characters.length > 0) {
+        try {
+            await chooseInitialCharacter();
+        } catch (error) {
+            characterError = characterError || error;
+            console.error("初期キャラクター表示エラー:", error);
+        }
+    }
+
+    if (characters.length === 0) {
+        showGameLoadError(
+            "キャラクターを読み込めませんでした。",
+            characterError ? String(characterError.message || characterError) : ""
+        );
+    } else if (backgroundError) {
+        console.warn("背景だけ読み込めませんでした。キャラクター表示は続行します。");
+    }
+}
+
+function showGameLoadError(title, detail = "") {
+    let box = document.getElementById("gameLoadError");
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "gameLoadError";
+        Object.assign(box.style, {
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: "9999",
+            maxWidth: "760px",
+            padding: "28px 34px",
+            borderRadius: "18px",
+            background: "rgba(20,24,30,.92)",
+            color: "#fff",
+            fontSize: "24px",
+            lineHeight: "1.6",
+            textAlign: "center",
+            boxShadow: "0 18px 60px rgba(0,0,0,.35)",
+            pointerEvents: "none"
+        });
+        game.appendChild(box);
+    }
+    box.innerHTML = "";
+    const strong = document.createElement("div");
+    strong.style.fontWeight = "700";
+    strong.textContent = title;
+    box.appendChild(strong);
+
+    if (detail) {
+        const small = document.createElement("div");
+        small.style.marginTop = "8px";
+        small.style.fontSize = "16px";
+        small.style.opacity = ".78";
+        small.textContent = detail;
+        box.appendChild(small);
+    }
+}
+
+/* 時計の更新関数 */
+function startClock() {
+    const dayOfWeekStr = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    
+    function updateClock() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const date = now.getDate();
+        const day = dayOfWeekStr[now.getDay()];
+        
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        clockHour.textContent = hours;
+        clockMinute.textContent = minutes;
+        clockColon.classList.toggle("off", now.getSeconds() % 2 === 1);
+        clockDate.innerText = `${year}/${month}/${date}`;
+        clockDay.innerText = day;
+    }
+
+    function tickOnSecond() {
+        updateClock();
+        const delay = 1000 - (Date.now() % 1000) + 8;
+        setTimeout(tickOnSecond, delay);
+    }
+
+    tickOnSecond();
+}
+
+/* キャラクターJSON読み込み（サブフォルダ構造対応） */
+async function loadCharacters() {
+    const response = await fetch("characters/index.json", { cache: "no-store" });
+    if (!response.ok) {
+        throw new Error(`characters/index.json が読み込めません (${response.status})`);
+    }
+
+    let text = await response.text();
+    text = text
+        .replace(/^\uFEFF/, "")
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/, "")
+        .replace(/\s*```$/, "")
+        .trim();
+
+    const firstBracket = text.indexOf("[");
+    const lastBracket = text.lastIndexOf("]");
+    if (firstBracket !== -1 && lastBracket !== -1) {
+        text = text.substring(firstBracket, lastBracket + 1);
+    }
+
+    // 末尾カンマ程度なら事故らないようにする。
+    text = text.replace(/,\s*]/g, "]");
+
+    let files;
+    try {
+        files = JSON.parse(text);
+    } catch (error) {
+        throw new Error("characters/index.json のJSON形式が壊れています: " + error.message);
+    }
+
+    if (!Array.isArray(files)) {
+        throw new Error("characters/index.json は配列 [...] にしてください。");
+    }
+
+    characters = [];
+    const failed = [];
+
+    function characterPathCandidates(entry) {
+        let file = String(entry ?? "").trim().replace(/\\/g, "/");
+        file = file.replace(/^\.?\//, "");
+        if (!file) return [];
+
+        const out = [];
+
+        // characters/145/145.json のような完全表記
+        if (file.startsWith("characters/")) {
+            out.push(file);
+        } else {
+            // 145/145.json
+            out.push("characters/" + file);
+
+            // 145.json -> characters/145.json と characters/145/145.json の両方を試す
+            if (!file.includes("/")) {
+                const name = file;
+                const folder = name.replace(/\.json$/i, "");
+                out.push("characters/" + folder + "/" + name);
+            }
+        }
+
+        return [...new Set(out)];
+    }
+
+    for (const entry of files) {
+        const candidates = characterPathCandidates(entry);
+        if (candidates.length === 0) continue;
+
+        let res = null;
+        let targetPath = "";
+
+        for (const candidate of candidates) {
+            try {
+                const r = await fetch(candidate, { cache: "no-store" });
+                if (r.ok) {
+                    res = r;
+                    targetPath = candidate;
+                    break;
+                }
+            } catch (error) {
+                console.warn("候補パス取得失敗:", candidate, error);
+            }
+        }
+
+        if (!res) {
+            console.error("キャラクターJSONが見つかりません:", candidates);
+            failed.push(`${String(entry)}（ファイルなし）`);
+            continue;
+        }
+
+        let charText = await res.text();
+        charText = charText
+            .replace(/^\uFEFF/, "")
+            .replace(/^```json\s*/i, "")
+            .replace(/^```\s*/, "")
+            .replace(/\s*```$/, "")
+            .trim();
+
+        const fBracket = charText.indexOf("{");
+        const lBracket = charText.lastIndexOf("}");
+        if (fBracket !== -1 && lBracket !== -1) {
+            charText = charText.substring(fBracket, lBracket + 1);
+        }
+
+        try {
+            const json = JSON.parse(charText);
+
+            if (!json || typeof json !== "object" || Array.isArray(json)) {
+                throw new Error("JSONの最上位がオブジェクトではありません");
+            }
+
+            // 実際に読み込めたJSONの場所を基準に画像を解決する。
+            const relativePath = targetPath.startsWith("characters/")
+                ? targetPath.substring("characters/".length)
+                : targetPath;
+            const slash = relativePath.lastIndexOf("/");
+            json._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : "";
+            json._sourcePath = targetPath;
+
+            characters.push(json);
+        } catch (error) {
+            // ★ここでthrowしない。145が壊れても143を生かす。
+            console.error(`構文エラーがあるキャラクターJSON: ${targetPath}`, error);
+            failed.push(`${targetPath}（JSON構文エラー）`);
+            continue;
+        }
+    }
+
+    if (failed.length) {
+        console.warn("読み飛ばしたキャラクター:", failed);
+    }
+
+    if (characters.length === 0) {
+        const suffix = failed.length ? ` / ${failed.join(", ")}` : "";
+        throw new Error("有効なキャラクターJSONを1件も読み込めませんでした" + suffix);
+    }
+
+}
+
+/* JSON共通パーサ */
+function parseCharacterJsonText(text) {
+    let value = String(text || "")
+        .replace(/^\uFEFF/, "")
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/, "")
+        .replace(/\s*```$/, "")
+        .trim();
+
+    const first = value.indexOf("{");
+    const last = value.lastIndexOf("}");
+    if (first !== -1 && last !== -1) value = value.substring(first, last + 1);
+    return JSON.parse(value);
+}
+
+/* ===== Notion同期台詞：characters/<ID>/dialogue.json 専用 ===== */
+const EMPTY_DIALOGUE = Object.freeze({
+    talk: Object.freeze({ greeting: Object.freeze([]), normal: Object.freeze([]), rapid: Object.freeze([]) }),
+    special: Object.freeze({ dates: Object.freeze([]), periods: Object.freeze([]) }),
+    greetingDates: Object.freeze([]),
+    greetingPeriods: Object.freeze([]),
+    areas: Object.freeze([])
+});
+
+function dialoguePathForCharacter(char) {
+    if (!char) return "";
+    const baseDir = String(char._baseDir || "");
+    return `characters/${baseDir}dialogue.json`;
+}
+
+async function loadDialogueForCharacter(char) {
+    if (!char) return EMPTY_DIALOGUE;
+    const path = dialoguePathForCharacter(char);
+    if (!path) return EMPTY_DIALOGUE;
+
+    try {
+        const response = await fetch(path, { cache: "no-store" });
+        if (response.status === 404) {
+            console.info(`台詞データなし: ${path}`);
+            char._dialogueData = EMPTY_DIALOGUE;
+            return EMPTY_DIALOGUE;
+        }
+        if (!response.ok) throw new Error(`${path} (${response.status})`);
+
+        const json = parseCharacterJsonText(await response.text());
+        if (!json || typeof json !== "object" || Array.isArray(json)) {
+            throw new Error("dialogue.json の最上位がオブジェクトではありません");
+        }
+
+        const normalized = {
+            talk: {
+                greeting: Array.isArray(json.talk?.greeting) ? json.talk.greeting : [],
+                normal: Array.isArray(json.talk?.normal) ? json.talk.normal : [],
+                rapid: Array.isArray(json.talk?.rapid) ? json.talk.rapid : []
+            },
+            special: {
+                dates: Array.isArray(json.special?.dates) ? json.special.dates : [],
+                periods: Array.isArray(json.special?.periods) ? json.special.periods : []
+            },
+            greetingDates: Array.isArray(json.greetingDates) ? json.greetingDates : [],
+            greetingPeriods: Array.isArray(json.greetingPeriods) ? json.greetingPeriods : [],
+            areas: Array.isArray(json.areas) ? json.areas : []
+        };
+        char._dialogueData = normalized;
+        return normalized;
+    } catch (error) {
+        console.error("dialogue.json 読み込み失敗:", error);
+        char._dialogueData = EMPTY_DIALOGUE;
+        return EMPTY_DIALOGUE;
+    }
+}
+
+function getDialogueData() {
+    return currentBaseCharacter?._dialogueData || EMPTY_DIALOGUE;
+}
+
+function getMergedTalkSection(name) {
+    const dialogueData = getDialogueData();
+    return Array.isArray(dialogueData?.talk?.[name]) ? dialogueData.talk[name] : [];
+}
+
+function getMergedGreetingDateItems() {
+    const dialogueData = getDialogueData();
+    return Array.isArray(dialogueData?.greetingDates) ? dialogueData.greetingDates : [];
+}
+
+function getMergedGreetingPeriodItems() {
+    const dialogueData = getDialogueData();
+    return Array.isArray(dialogueData?.greetingPeriods) ? dialogueData.greetingPeriods : [];
+}
+
+function getMergedSpecialDateItems() {
+    const dialogueData = getDialogueData();
+    return Array.isArray(dialogueData?.special?.dates) ? dialogueData.special.dates : [];
+}
+
+function getMergedSpecialPeriodItems() {
+    const dialogueData = getDialogueData();
+    return Array.isArray(dialogueData?.special?.periods) ? dialogueData.special.periods : [];
+}
+
+function getAreaKey(area) {
+    if (!area) return "";
+    if (area.key != null && String(area.key).trim()) return String(area.key).trim();
+    return String(area.name || "").trim();
+}
+
+/*
+  タッチエリアの座標・サイズ・priority はキャラ/衣装JSON、
+  talk / rapid は Notion同期の dialogue.json の同じ key から取得する。
+*/
+function getActiveAreas() {
+    if (!data) return [];
+    const visualAreas = Array.isArray(data.areas) ? data.areas : [];
+    const sourceAreas = Array.isArray(getDialogueData()?.areas) ? getDialogueData().areas : [];
+
+    return visualAreas.map(area => {
+        const key = getAreaKey(area);
+        const sourceArea = sourceAreas.find(item => getAreaKey(item) === key);
+        return {
+            ...area,
+            talk: Array.isArray(sourceArea?.talk) ? sourceArea.talk : [],
+            rapid: Array.isArray(sourceArea?.rapid) ? sourceArea.rapid : []
+        };
+    });
+}
+
+/* 表情名も dialogue.json の各台詞に直接保存する。 */
+function getTalkExpressionName(talk) {
+    if (!talk) return null;
+    const direct = talk.expression ?? talk.variant ?? null;
+    return direct == null || direct === "" ? null : String(direct);
+}
+
+function restoreDefaultCharacterVariant() {
+    const name = data && data.defaultVariant ? String(data.defaultVariant) : null;
+    setCharacterVariant(name);
+}
+
+function applyTalkExpression(talk) {
+    const expression = getTalkExpressionName(talk);
+    if (expression && setCharacterVariant(expression)) return;
+    restoreDefaultCharacterVariant();
+}
+
+
+/* 背景JSON読み込み */
+async function loadBackgrounds() {
+    const response = await fetch("backgrounds/backgrounds.json", { cache: "no-store" });
+    if (!response.ok) {
+        throw new Error("backgrounds/backgrounds.json が読み込めません。");
+    }
+
+    let bgText = await response.text();
+    bgText = bgText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+    const firstBracket = bgText.indexOf('[');
+    const lastBracket = bgText.lastIndexOf(']');
+    if (firstBracket !== -1 && lastBracket !== -1) {
+        bgText = bgText.substring(firstBracket, lastBracket + 1);
+    }
+    try {
+        backgrounds = JSON.parse(bgText);
+        if (!Array.isArray(backgrounds)) {
+            throw new Error("背景JSONは配列ではありません");
+        }
+    } catch (error) {
+        throw new Error("backgrounds/backgrounds.json のJSON形式が壊れています: " + error.message);
+    }
+}
+
+function getToday() {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Tokyo",
+        month: "numeric",
+        day: "numeric"
+    }).formatToParts(new Date());
+
+    const values = {};
+    parts.forEach(part => {
+        if (part.type === "month" || part.type === "day") {
+            values[part.type] = Number(part.value);
+        }
+    });
+
+    return {
+        month: values.month,
+        day: values.day
+    };
+}
+
+function getBirthdayCharacters() {
+    const today = getToday();
+    return characters.filter(char => {
+        const birthday = char && char.birthday;
+        if (!birthday) return false;
+        return Number(birthday.month) === today.month &&
+               Number(birthday.day) === today.day;
+    });
+}
+
+
+function getBaseCharacterData() {
+    return currentBaseCharacter || data || null;
+}
+
+function getCharacterCacheKey(char) {
+    if (!char) return "";
+    return String(char._sourcePath || char.id || "");
+}
+
+function parseCostumeJsonText(textValue) {
+    return parseCharacterJsonText(textValue);
+}
+
+async function fetchCostumeAt(path, baseChar) {
+    try {
+        const response = await fetch(path, { cache: "no-store" });
+        if (!response.ok) return null;
+
+        const costume = parseCostumeJsonText(await response.text());
+        if (!costume || typeof costume !== "object" || Array.isArray(costume)) return null;
+
+        const relativePath = path.startsWith("characters/")
+            ? path.substring("characters/".length)
+            : path;
+        const slash = relativePath.lastIndexOf("/");
+        costume._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : "";
+        costume._sourcePath = path;
+        return costume;
+    } catch (error) {
+        console.warn("衣装JSON読み込み失敗:", path, error);
+        return null;
+    }
+}
+
+function costumePathFromRef(baseChar, ref) {
+    const baseDir = String(baseChar?._baseDir || "");
+    const raw = String(ref || "").trim().replace(/\\/g, "/");
+    if (!raw) return "";
+    if (raw.startsWith("characters/")) return raw;
+    if (/\.json$/i.test(raw)) return "characters/" + baseDir + raw.replace(/^\.\//, "");
+    return `characters/${baseDir}costumes/${raw}/${raw}.json`;
+}
+
+async function loadCostumesForCharacter(baseChar) {
+    if (!baseChar) return [];
+    const cacheKey = getCharacterCacheKey(baseChar);
+    if (costumeCache.has(cacheKey)) return costumeCache.get(cacheKey);
+
+    const found = [];
+    const seenPaths = new Set();
+
+    const addPath = async (path) => {
+        if (!path || seenPaths.has(path)) return false;
+        seenPaths.add(path);
+        const costume = await fetchCostumeAt(path, baseChar);
+        if (!costume) return false;
+        found.push(costume);
+        return true;
+    };
+
+    // 将来 parent JSON に costumes が入っている場合もそのまま利用可能。
+    if (Array.isArray(baseChar.costumes)) {
+        for (const item of baseChar.costumes) {
+            const ref = typeof item === "string"
+                ? item
+                : (item?.json || item?.path || item?.id || "");
+            await addPath(costumePathFromRef(baseChar, ref));
+        }
+    }
+
+    // 現在の統合エディター標準名：<ID>_costume01, 02, ...
+    // index.json には親JSONだけを載せる仕様なので、親フォルダ内を規則名で探索する。
+    const parentId = String(baseChar.id ?? "").trim();
+    if (parentId) {
+        let consecutiveMisses = 0;
+        for (let n = 1; n <= 40 && consecutiveMisses < 3; n++) {
+            const cid = `${parentId}_costume${String(n).padStart(2, "0")}`;
+            const path = `characters/${baseChar._baseDir || ""}costumes/${cid}/${cid}.json`;
+            const ok = await addPath(path);
+            consecutiveMisses = ok ? 0 : consecutiveMisses + 1;
+        }
+    }
+
+    found.sort((a, b) => String(a.id || a.name || "").localeCompare(String(b.id || b.name || ""), "ja"));
+    costumeCache.set(cacheKey, found);
+    return found;
+}
+
+function getCurrentCostumeValue() {
+    if (!currentBaseCharacter || data === currentBaseCharacter) return "normal";
+    const selectedIndex = availableCostumes.indexOf(data);
+    return selectedIndex >= 0 ? `costume:${selectedIndex}` : "normal";
+}
+
+function getCostumeLabel(value) {
+    if (value === "normal") return "通常";
+    const match = /^costume:(\d+)$/.exec(String(value || ""));
+    if (!match) return "通常";
+    const costume = availableCostumes[Number(match[1])];
+    return String(costume?.name || costume?.id || `衣装${Number(match[1]) + 1}`);
+}
+
+function closeCostumeMenu() {
+    if (!costumeSelectMenu || !costumeSelect) return;
+    costumeSelectMenu.classList.remove("open");
+    costumeSelect.setAttribute("aria-expanded", "false");
+}
+
+function setupCostumeSelector() {
+    if (!costumeSelect || !costumeSelectWrap || !costumeSelectMenu || !costumeSelectLabel) return;
+
+    costumeSelectMenu.innerHTML = "";
+
+    if (availableCostumes.length === 0) {
+        costumeSelectWrap.style.display = "none";
+        costumeSelectLabel.textContent = "通常";
+        closeCostumeMenu();
+        return;
+    }
+
+    costumeSelectWrap.style.display = "block";
+    const currentValue = getCurrentCostumeValue();
+    costumeSelectLabel.textContent = getCostumeLabel(currentValue);
+
+    const items = [
+        { value: "normal", label: "通常" },
+        ...availableCostumes.map((costume, index) => ({
+            value: `costume:${index}`,
+            label: String(costume.name || costume.id || `衣装${index + 1}`)
+        }))
+    ];
+
+    items.forEach(item => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "costume-option" + (item.value === currentValue ? " active" : "");
+        button.dataset.value = item.value;
+        button.setAttribute("role", "option");
+        button.setAttribute("aria-selected", item.value === currentValue ? "true" : "false");
+        button.textContent = item.label;
+
+        button.addEventListener("click", async event => {
+            event.preventDefault();
+            event.stopPropagation();
+            const value = button.dataset.value || item.value;
+            closeCostumeMenu();
+            const changed = await switchCostume(value);
+            if (!changed) {
+                console.warn("衣装変更に失敗:", value);
+            }
+        });
+
+        costumeSelectMenu.appendChild(button);
+    });
+}
+
+async function activateCharacterData(nextData, { greet = false } = {}) {
+    if (!nextData) return;
+
+    data = nextData;
+    baseImageMetrics = null;
+    baseImageMetricsPath = "";
+    currentCharacterVariant = nextData.defaultVariant ? String(nextData.defaultVariant) : null;
+
+    if (messageTimer) {
+        clearTimeout(messageTimer);
+        messageTimer = null;
+    }
+    clearDialogueChoices();
+    activeContinuation = null;
+    message.style.display = "none";
+
+    count = {};
+    resetDialogueState();
+    loadCharacterImage();
+    loadFrame();
+    setupPersonalPage();
+    setupCostumeSelector();
+
+    if (greet) showGreeting();
+}
+
+async function switchCostume(value) {
+    if (!currentBaseCharacter) return false;
+
+    const raw = String(value || "");
+
+    if (raw === "normal") {
+        await activateCharacterData(currentBaseCharacter, { greet: false });
+        setupCostumeSelector();
+        return true;
+    }
+
+    const match = /^costume:(\d+)$/.exec(raw);
+    if (!match) {
+        console.warn("衣装指定が不正です:", raw);
+        return false;
+    }
+
+    const index = Number(match[1]);
+    const costume = availableCostumes[index];
+    if (!costume) {
+        console.warn("衣装データが見つかりません:", index, availableCostumes);
+        return false;
+    }
+
+    // 衣装JSONは見た目だけを切り替え、台詞は親キャラの dialogue.json を使う。
+    await activateCharacterData(costume, { greet: false });
+    setupCostumeSelector();
+
+    // 画像の切替を即時に再適用する。
+    loadCharacterImage();
+    return data === costume;
+}
+
+async function chooseInitialCharacter() {
+    const birthdayCharacters = getBirthdayCharacters();
+    if (birthdayCharacters.length === 1) {
+        await loadCharacter(birthdayCharacters[0]);
+        return;
+    }
+    if (birthdayCharacters.length > 1) {
+        showBirthdayChoice(birthdayCharacters);
+        return;
+    }
+    if (characters.length > 0) {
+        const index = Math.floor(Math.random() * characters.length);
+        await loadCharacter(characters[index]);
+    }
+}
+
+async function loadCharacter(char) {
+    currentBaseCharacter = char;
+    await loadDialogueForCharacter(char);
+    availableCostumes = await loadCostumesForCharacter(char);
+    await activateCharacterData(char, { greet: true });
+    closeMenu();
+}
+
+function normalizePageUrl(value) {
+    if (!value) return "";
+    const raw = String(value).trim();
+    const markdown = raw.match(/^\[[^\]]*\]\((https?:\/\/[^)]+)\)$/i);
+    return markdown ? markdown[1] : raw;
+}
+
+function setupPersonalPage() {
+    const identityData = getBaseCharacterData();
+    characterName.innerHTML = "";
+    characterName.classList.remove("birthday-name");
+
+    if (identityData && identityData.name) {
+        const today = getToday();
+        const isBirthday = Boolean(
+            identityData.birthday &&
+            Number(identityData.birthday.month) === today.month &&
+            Number(identityData.birthday.day) === today.day
+        );
+
+        if (isBirthday) {
+            const cake = document.createElement("img");
+            cake.src = new URL("icon/cake.png", document.baseURI).href;
+            cake.alt = "";
+            cake.className = "character-name-cake";
+
+            // 名前横の誕生日ケーキは他の img 共通CSSに影響されないよう直接7px固定
+            cake.style.width = "30px";
+            cake.style.height = "30px";
+            cake.style.minWidth = "30px";
+            cake.style.maxWidth = "30px";
+            cake.style.flex = "0 0 30px";
+
+            characterName.appendChild(cake);
+            characterName.classList.add("birthday-name");
+        }
+
+        const nameText = document.createElement("span");
+        nameText.textContent = identityData.name;
+        characterName.appendChild(nameText);
+        characterName.style.display = "flex";
+    } else {
+        characterName.style.display = "none";
+    }
+
+    const pageUrl = normalizePageUrl(identityData && identityData.page);
+    if (pageUrl) {
+        personalPage.href = pageUrl;
+        personalPage.style.display = "flex";
+    } else {
+        personalPage.href = "#";
+        personalPage.style.display = "none";
+    }
+}
+
+function getImagePath(imageName, charData = data) {
+    if (!imageName) return "";
+    if (imageName.startsWith("http://") || imageName.startsWith("https://") || imageName.startsWith("/")) return imageName;
+    if (imageName.startsWith("characters/")) return imageName;
+    const baseDir = charData && charData._baseDir ? charData._baseDir : "";
+    return "characters/" + baseDir + imageName;
+}
+
+let currentCharacterVariant = null;
+
+function getCharacterVariant(name = currentCharacterVariant) {
+    if (!data || !name || !Array.isArray(data.variants)) return null;
+    return data.variants.find(item => item && String(item.name) === String(name)) || null;
+}
+
+function setCharacterVariant(name = null) {
+    if (!data) return false;
+    if (name == null || name === "" || name === "normal") {
+        currentCharacterVariant = null;
+        loadCharacterImage();
+        return true;
+    }
+    const variant = getCharacterVariant(name);
+    if (!variant) return false;
+    currentCharacterVariant = String(variant.name);
+    loadCharacterImage();
+    return true;
+}
+window.setCharacterVariant = setCharacterVariant;
+
+let baseImageMetrics = null;
+let baseImageMetricsPath = "";
+
+function loadBaseImageMetrics(callback) {
+    if (!data || !data.image) {
+        callback(null);
+        return;
+    }
+
+    const basePath = getImagePath(data.image);
+    if (baseImageMetrics && baseImageMetricsPath === basePath) {
+        callback(baseImageMetrics);
+        return;
+    }
+
+    const probe = new Image();
+    probe.onload = () => {
+        baseImageMetricsPath = basePath;
+        baseImageMetrics = {
+            width: probe.naturalWidth,
+            height: probe.naturalHeight
+        };
+        callback(baseImageMetrics);
+    };
+    probe.onerror = () => {
+        console.error("通常立ち絵のサイズ取得失敗:", basePath);
+        callback(null);
+    };
+    probe.src = basePath;
+}
+
+function applyAnchoredCharacterGeometry(img, position, variant = null, baseMetrics = null) {
+    const baseWidth = Math.max(1, Number(position.scale || 1000));
+
+    // 通常立ち絵
+    if (!variant) {
+        const ratio = img.naturalWidth > 0 ? (img.naturalHeight / img.naturalWidth) : 1;
+        const height = baseWidth * ratio;
+        const footX = Number(position.x ?? 960);
+        const footY = Number(position.y ?? 1080);
+
+        img.style.left = (footX - baseWidth / 2) + "px";
+        img.style.top = (footY - height) + "px";
+        img.style.width = baseWidth + "px";
+        img.style.height = "auto";
+
+        img.dataset.anchorX = String(footX);
+        img.dataset.anchorY = String(footY);
+        img.dataset.displayWidth = String(baseWidth);
+        img.dataset.displayHeight = String(height);
+        return;
+    }
+
+    // 差分：
+    // 通常立ち絵と「同じピクセル倍率」で表示し、
+    // 通常立ち絵の画像中央を基準に offsetX / offsetY だけ微調整する。
+    const bm = baseMetrics || baseImageMetrics;
+    const baseNaturalWidth = Math.max(1, Number(bm?.width || img.naturalWidth || 1));
+    const baseNaturalHeight = Math.max(1, Number(bm?.height || img.naturalHeight || 1));
+    const pixelScale = baseWidth / baseNaturalWidth;
+
+    const baseDisplayHeight = baseNaturalHeight * pixelScale;
+    const baseCenterX = Number(position.x ?? 960);
+    const baseCenterY = Number(position.y ?? 1080) - baseDisplayHeight / 2;
+
+    const variantScale = Math.max(0.01, Number(variant.scale ?? 1));
+    const width = img.naturalWidth * pixelScale * variantScale;
+    const height = img.naturalHeight * pixelScale * variantScale;
+
+    const centerX = baseCenterX + Number(variant.offsetX || 0);
+    const centerY = baseCenterY + Number(variant.offsetY || 0);
+
+    img.style.left = (centerX - width / 2) + "px";
+    img.style.top = (centerY - height / 2) + "px";
+    img.style.width = width + "px";
+    img.style.height = "auto";
+
+    img.dataset.anchorX = String(centerX);
+    img.dataset.anchorY = String(centerY);
+    img.dataset.displayWidth = String(width);
+    img.dataset.displayHeight = String(height);
+}
+
+function loadCharacterImage() {
+    if (!data) return;
+
+    const position = data.position || { x: 960, y: 1080, scale: 1000 };
+    const variant = getCharacterVariant();
+    const imageName = variant?.image || data.image;
+    const imgPath = getImagePath(imageName);
+    if (!imgPath) return;
+
+    const apply = () => {
+        if (!character.naturalWidth) return;
+
+        if (variant) {
+            loadBaseImageMetrics(metrics => {
+                applyAnchoredCharacterGeometry(character, position, variant, metrics);
+            });
+        } else {
+            // 通常立ち絵を表示した時点で基準画像サイズもキャッシュ。
+            baseImageMetricsPath = getImagePath(data.image);
+            baseImageMetrics = {
+                width: character.naturalWidth,
+                height: character.naturalHeight
+            };
+            applyAnchoredCharacterGeometry(character, position, null, baseImageMetrics);
+        }
+    };
+
+    character.onerror = () => {
+        console.error("画像読み込み失敗:", imgPath, "source:", data?._sourcePath || "(unknown)");
+    };
+    character.onload = apply;
+    character.src = imgPath;
+
+    if (character.complete && character.naturalWidth) {
+        requestAnimationFrame(apply);
+    }
+}
+
+function applyMobileCharacterTransform() {
+    // 立ち絵は常に1920x1080のゲーム座標に固定。
+    // スマホはゲーム画面側の中央クロップだけで表示する。
+}
+
+function loadFrame() {
+    if (data.frame) {
+        const baseDir = data._baseDir ? data._baseDir : '';
+        const framePath = data.frame.startsWith("http") || data.frame.startsWith("/") || data.frame.startsWith("characters/") ? data.frame : "characters/" + baseDir + data.frame;
+        frame.src = framePath;
+        frame.style.display = "block";
+    } else {
+        frame.removeAttribute("src");
+        frame.style.display = "none";
+    }
+}
+
+
+const dialogueFontMap = {
+    gothic: '"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif',
+    notoSans: '"Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif',
+    notoBlack: '"Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif',
+    mplus: '"M PLUS 1p","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif',
+    rounded: '"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif',
+    zenMaru: '"Zen Maru Gothic","M PLUS Rounded 1c",sans-serif',
+    serif: '"Yu Mincho","Hiragino Mincho ProN",serif',
+    notoSerif: '"Noto Serif JP","Yu Mincho","Hiragino Mincho ProN",serif',
+    shippori: '"Shippori Mincho","Yu Mincho",serif',
+    dela: '"Dela Gothic One","Noto Sans JP",sans-serif',
+    reggae: '"Reggae One","Noto Sans JP",sans-serif',
+    rocknroll: '"RocknRoll One","Noto Sans JP",sans-serif',
+    rampart: '"Rampart One","Noto Sans JP",sans-serif',
+    train: '"Train One","Noto Sans JP",sans-serif',
+    yujiBoku: '"Yuji Boku","Yu Mincho",serif',
+    newTegomin: '"New Tegomin","Yu Mincho",serif',
+    hina: '"Hina Mincho","Yu Mincho",serif',
+    stick: '"Stick","Yu Gothic",sans-serif',
+    kaisei: '"Kaisei Decol","Yu Mincho",serif',
+    mochiy: '"Mochiy Pop One","M PLUS Rounded 1c",sans-serif',
+    mochiyP: '"Mochiy Pop P One","M PLUS Rounded 1c",sans-serif',
+    potta: '"Potta One","M PLUS Rounded 1c",sans-serif',
+    hachi: '"Hachi Maru Pop","M PLUS Rounded 1c",sans-serif',
+    yusei: '"Yusei Magic","Yu Gothic",sans-serif',
+    kosugiMaru: '"Kosugi Maru","M PLUS Rounded 1c",sans-serif',
+    klee: '"Klee One","Yu Gothic",sans-serif',
+    zenKurenaido: '"Zen Kurenaido","Yu Gothic",sans-serif',
+    yomogi: '"Yomogi","Yu Gothic",sans-serif',
+    dot: '"DotGothic16","Yu Gothic",monospace',
+    mplusCode: '"M PLUS 1 Code","Noto Sans JP",monospace',
+    bizUdMincho: '"BIZ UDMincho","Yu Mincho","Hiragino Mincho ProN",serif',
+    shipporiAntiqueB1: '"Shippori Antique B1","Noto Sans JP",sans-serif',
+    kaiseiHarunoUmi: '"Kaisei HarunoUmi","Yu Mincho",serif',
+    wdxlLubrifont: '"WDXL Lubrifont JP N","Noto Sans JP",sans-serif'
+};
+
+function applyMessageTextStyle(talk, layout) {
+    if (!messageText) return;
+
+    const dialogueData = getDialogueData();
+    const defaults = dialogueData && dialogueData.textStyle ? dialogueData.textStyle : {};
+    const local = talk && talk.style ? talk.style : {};
+    const style = { ...defaults, ...local };
+
+    messageText.className = "message-text";
+    messageText.textContent = talk && talk.text != null ? String(talk.text) : "";
+
+    messageText.style.color = style.color || "#f0f2f5";
+    messageText.style.fontFamily = dialogueFontMap[style.font] || dialogueFontMap.gothic;
+    messageText.style.fontWeight = style.font === "notoBlack" ? "900" : (style.weight || "400");
+
+    // Notion側が空欄なら標準サイズ。数値が入っている時だけそのpxを使う。
+    const fallbackSize = layout && layout.active ? 34 : 28;
+    const localSize = Number(local.size);
+    const defaultSize = Number(defaults.size);
+    let fontSize = fallbackSize;
+    if (local.size !== undefined && local.size !== null && String(local.size) !== "" && Number.isFinite(localSize) && localSize > 0) {
+        fontSize = localSize;
+    } else if (defaults.size !== undefined && defaults.size !== null && String(defaults.size) !== "" && Number.isFinite(defaultSize) && defaultSize > 0) {
+        fontSize = defaultSize;
+    }
+    messageText.style.fontSize = fontSize + "px";
+
+    const animation = String(style.animation || "");
+    const allowed = ["tremble","shake","sway","float","pulse","bounce","blink","glitch"];
+    if (allowed.includes(animation)) {
+        void messageText.offsetWidth;
+        messageText.classList.add("anim-" + animation);
+    }
+}
+
+
+/* 続き・選択肢 */
+function clearDialogueChoices() {
+    if (!choiceBox) return;
+    choiceBox.innerHTML = "";
+    choiceBox.style.display = "none";
+}
+
+function normalizeContinuationNodes(next, inheritedStyle = null) {
+    const out = [];
+    const walk = (value, parentStyle = inheritedStyle) => {
+        if (value === null || value === undefined || value === "") return;
+        if (Array.isArray(value)) {
+            value.forEach(item => walk(item, parentStyle));
+            return;
+        }
+        if (typeof value === "string") {
+            out.push({ text: value, ...(parentStyle ? { style: { ...parentStyle } } : {}) });
+            return;
+        }
+        if (typeof value !== "object") return;
+
+        const ownStyle = value.style
+            ? { ...(parentStyle || {}), ...value.style }
+            : parentStyle ? { ...parentStyle } : null;
+
+        if (value.text !== undefined && value.text !== null) {
+            out.push({
+                ...value,
+                next: undefined,
+                ...(ownStyle ? { style: ownStyle } : {})
+            });
+        }
+        if (value.next) walk(value.next, ownStyle);
+    };
+    walk(next, inheritedStyle);
+    return out;
+}
+
+function hasMoreContinuation() {
+    return Boolean(
+        activeContinuation &&
+        activeContinuation.index < activeContinuation.sequence.length - 1
+    );
+}
+
+function positionChoiceBox() {
+    if (!choiceBox || choiceBox.style.display === "none") return;
+
+    const layout = window.mobileLayout || {
+        active:false,
+        leftBound:0,
+        rightBound:1920,
+        topBound:0,
+        bottomBound:1080
+    };
+
+    const leftBound = layout.leftBound ?? 0;
+    const rightBound = layout.rightBound ?? 1920;
+    const topBound = layout.topBound ?? 0;
+    const bottomBound = layout.bottomBound ?? 1080;
+    const visibleWidth = rightBound - leftBound;
+    const visibleHeight = bottomBound - topBound;
+
+    const targetWidth = Math.min(
+        layout.active ? 988 : 936,
+        Math.max(280, visibleWidth - 80)
+    );
+
+    choiceBox.style.width = targetWidth + "px";
+
+    // offsetHeight は display:flex 後に取得する。
+    const choiceHeight = choiceBox.offsetHeight || 90;
+
+    let left = leftBound + (visibleWidth - targetWidth) / 2;
+    let top = topBound + (visibleHeight - choiceHeight) / 2;
+
+    left = Math.max(leftBound + 20, Math.min(left, rightBound - targetWidth - 20));
+    top = Math.max(topBound + 20, Math.min(top, bottomBound - choiceHeight - 20));
+
+    choiceBox.style.left = Math.round(left) + "px";
+    choiceBox.style.top = Math.round(top) + "px";
+}
+
+function normalizeChoiceList(choices) {
+    if (choices == null) return [];
+    const list = Array.isArray(choices) ? choices : [choices];
+    return list.filter(choice => {
+        if (choice == null) return false;
+        if (typeof choice === "string") return String(choice).trim() !== "";
+        return String(choice.label || "").trim() !== "" ||
+               String(choice.text || choice.reply || "").trim() !== "";
+    }).map((choice, index) => {
+        if (typeof choice === "string") {
+            return { label: choice, text: "" };
+        }
+        return {
+            ...choice,
+            label: String(choice.label || `選択肢${index + 1}`),
+            text: String(choice.text ?? choice.reply ?? "")
+        };
+    });
+}
+
+function showDialogueChoices(choices, segment) {
+    clearDialogueChoices();
+    const list = normalizeChoiceList(choices);
+    if (!list.length) return false;
+
+    list.forEach((choice, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "choice-btn";
+        button.textContent = String(choice.label || `選択肢${index + 1}`);
+        button.addEventListener("click", event => {
+            event.stopPropagation();
+            clearDialogueChoices();
+            if (activeContinuation) activeContinuation.waitingChoice = false;
+
+            const reply = {
+                text: String(choice.text || ""),
+                style: { ...(segment?.style || {}), ...(choice.style || {}) }
+            };
+            if (choice.expression) reply.expression = choice.expression;
+
+            if (reply.text) {
+                showDialogueSegment(
+                    reply,
+                    activeContinuation?.clickX ?? 960,
+                    activeContinuation?.clickY ?? 540,
+                    activeContinuation?.forcePosition ?? null,
+                    { keepForContinuation: hasMoreContinuation() }
+                );
+            } else if (hasMoreContinuation()) {
+                advanceContinuation();
+            } else {
+                activeContinuation = null;
+                message.style.display = "none";
+            }
+        });
+        choiceBox.appendChild(button);
+    });
+
+    choiceBox.style.display = "flex";
+    requestAnimationFrame(positionChoiceBox);
+    return true;
+}
+
+function showDialogueSegment(talk, clickX, clickY, forcePosition = null, { keepForContinuation = false } = {}) {
+    if (!talk) return;
+
+    applyTalkExpression(talk);
+
+    const layout = window.mobileLayout || { active: false, leftBound: 0, rightBound: 1920, topBound: 0, bottomBound: 1080 };
+    const leftBound = layout.leftBound ?? 0;
+    const rightBound = layout.rightBound ?? 1920;
+    const topBound = layout.topBound ?? 0;
+    const bottomBound = layout.bottomBound ?? 1080;
+    const visibleWidth = rightBound - leftBound;
+
+    if (layout.active) {
+        message.style.width = Math.min(760, visibleWidth - 52) + "px";
+        message.style.maxWidth = (visibleWidth - 52) + "px";
+        message.style.fontSize = "34px";
+        message.style.whiteSpace = "normal";
+        message.style.overflowWrap = "anywhere";
+        message.style.wordBreak = "normal";
+        message.style.lineHeight = "1.5";
+        message.style.padding = "22px 26px";
+    } else {
+        message.style.width = "600px";
+        message.style.maxWidth = "600px";
+        message.style.fontSize = "28px";
+        message.style.whiteSpace = "normal";
+        message.style.overflowWrap = "anywhere";
+        message.style.wordBreak = "normal";
+        message.style.lineHeight = "1.6";
+        message.style.padding = "24px 32px";
+    }
+
+    applyMessageTextStyle(talk, layout);
+    message.style.display = "block";
+    const msgWidth = message.offsetWidth || 600;
+    const msgHeight = message.offsetHeight || 160;
+
+    let messageX, messageY;
+    if (layout.active && forcePosition) {
+        messageX = forcePosition.x - (msgWidth / 2);
+        messageY = forcePosition.y - (msgHeight / 2);
+    } else if (layout.active) {
+        const rect = game.getBoundingClientRect();
+        const targetClientY = window.innerHeight * 0.60;
+        const targetGameY = (targetClientY - rect.top) * (1080 / rect.height);
+        messageX = (leftBound + rightBound - msgWidth) / 2;
+        messageY = targetGameY - (msgHeight / 2);
+    } else if (forcePosition) {
+        messageX = forcePosition.x - (msgWidth / 2);
+        messageY = forcePosition.y - (msgHeight / 2);
+    } else {
+        const offset = 40;
+        const isLeftHalf = clickX < 960;
+        messageX = isLeftHalf ? (clickX - msgWidth - offset) : (clickX + offset);
+        messageY = clickY - (msgHeight / 2);
+    }
+
+    const margin = layout.active ? 26 : 20;
+    messageX = Math.max(leftBound + margin, Math.min(messageX, rightBound - msgWidth - margin));
+    messageY = Math.max(topBound + margin, Math.min(messageY, bottomBound - msgHeight - margin));
+    message.style.left = messageX + "px";
+    message.style.top = messageY + "px";
+
+    if (messageTimer) clearTimeout(messageTimer);
+    if (keepForContinuation) {
+        messageTimer = null;
+    } else {
+        messageTimer = setTimeout(() => {
+            clearDialogueChoices();
+            message.style.display = "none";
+            if (messageText) messageText.className = "message-text";
+            activeContinuation = null;
+            restoreDefaultCharacterVariant();
+        }, 3000);
+    }
+}
+
+function advanceContinuation() {
+    if (!activeContinuation || activeContinuation.waitingChoice) return false;
+    activeContinuation.index++;
+    if (activeContinuation.index >= activeContinuation.sequence.length) {
+        activeContinuation = null;
+        clearDialogueChoices();
+        return false;
+    }
+
+    const context = activeContinuation;
+    const segment = context.sequence[context.index];
+    const choices = normalizeChoiceList(segment.choices);
+    const keep = choices.length > 0 || context.index < context.sequence.length - 1;
+    const segmentText = String(segment?.text ?? "").trim();
+
+    if (segmentText) {
+        showDialogueSegment(
+            segment,
+            context.clickX,
+            context.clickY,
+            context.forcePosition,
+            { keepForContinuation: keep }
+        );
+    } else if (choices.length > 0) {
+        // 選択肢だけの枝では、空の台詞ボックスを出さない。
+        if (messageTimer) {
+            clearTimeout(messageTimer);
+            messageTimer = null;
+        }
+        if (messageText) {
+            messageText.textContent = "";
+            messageText.className = "message-text";
+        }
+        message.style.display = "none";
+    }
+
+    if (choices.length > 0) {
+        context.waitingChoice = showDialogueChoices(choices, segment);
+        return true;
+    }
+
+    // 空の続きで選択肢も無い場合は、そのノードを飛ばして次へ。
+    if (!segmentText && context.index < context.sequence.length - 1) {
+        return advanceContinuation();
+    }
+
+    return true;
+}
+
+/* 吹き出し位置の自動調整 */
+function speak(talk, clickX, clickY, forcePosition = null) {
+    if (!talk) return;
+
+    clearDialogueChoices();
+    activeContinuation = null;
+
+    const sequence = normalizeContinuationNodes(talk.next, talk.style || null);
+    if (sequence.length) {
+        activeContinuation = {
+            sequence,
+            index: -1,
+            clickX,
+            clickY,
+            forcePosition,
+            waitingChoice: false
+        };
+    }
+
+    const firstTalk = { ...talk, next: undefined };
+    const firstText = String(firstTalk?.text ?? "").trim();
+
+    if (firstText) {
+        showDialogueSegment(firstTalk, clickX, clickY, forcePosition, { keepForContinuation: sequence.length > 0 });
+    } else if (sequence.length > 0) {
+        // 本文が空で「続き」だけあるデータも空吹き出しを出さず、そのまま続きへ。
+        message.style.display = "none";
+        advanceContinuation();
+    }
+}
+
+function isTodaySpecified(item) {
+    if (!item) return false;
+
+    const today = getToday();
+
+    if (item.date) {
+        const [month, day] = String(item.date).split("-").map(Number);
+        return month === today.month && day === today.day;
+    }
+
+    return Number(item.month) === today.month &&
+           Number(item.day) === today.day;
+}
+
+function getGreetingDateTalk() {
+    const items = getMergedGreetingDateItems();
+    for (const item of items) {
+        if (
+            isTodaySpecified(item) &&
+            Array.isArray(item.talk) &&
+            item.talk.length > 0
+        ) {
+            return item.talk[0];
+        }
+    }
+    return null;
+}
+
+function getGreetingPeriodTalk() {
+    const items = getMergedGreetingPeriodItems();
+    for (const item of items) {
+        if (
+            item && item.start && item.end &&
+            isInPeriod(item.start, item.end) &&
+            Array.isArray(item.talk) &&
+            item.talk.length > 0
+        ) {
+            return item.talk[0];
+        }
+    }
+    return null;
+}
+
+
+function showGreeting() {
+    const dateGreeting = getGreetingDateTalk();
+    const periodGreeting = getGreetingPeriodTalk();
+    const normalGreetingPool = getMergedTalkSection("greeting");
+    const normalGreeting = normalGreetingPool.length > 0 ? normalGreetingPool[0] : null;
+
+    const greeting = dateGreeting || periodGreeting || normalGreeting;
+    if (!greeting) return;
+
+    /*
+      起動時 / ダイス / キャラアイコン選択のあいさつを全部同じ位置にする。
+      新しい立ち絵の画像読み込み完了前でも位置が変わらないよう、
+      character の寸法には依存しない。
+    */
+    const layout = window.mobileLayout || {
+        active:false,
+        leftBound:0,
+        rightBound:1920,
+        topBound:0,
+        bottomBound:1080
+    };
+
+    const leftBound = Number(layout.leftBound ?? 0);
+    const rightBound = Number(layout.rightBound ?? 1920);
+    const topBound = Number(layout.topBound ?? 0);
+    const bottomBound = Number(layout.bottomBound ?? 1080);
+
+    const visibleWidth = rightBound - leftBound;
+    const visibleHeight = bottomBound - topBound;
+
+    const greetingX = leftBound + visibleWidth * 0.5;
+    const greetingY = topBound + visibleHeight * 0.55;
+
+    speak(
+        greeting,
+        greetingX,
+        greetingY,
+        { x:greetingX, y:greetingY }
+    );
+}
+
+
+function dateToNumber(value) {
+    const [month, day] = value.split("-").map(Number);
+    return month * 100 + day;
+}
+
+function isInPeriod(start, end) {
+    const today = getToday();
+    const current = today.month * 100 + today.day;
+    const startNumber = dateToNumber(start);
+    const endNumber = dateToNumber(end);
+
+    if (startNumber <= endNumber) {
+        return current >= startNumber && current <= endNumber;
+    }
+    return current >= startNumber || current <= endNumber;
+}
+
+
+function getDateTalk() {
+    if (!canUseSpecial("date")) return null;
+    const pool = [];
+
+    getMergedSpecialDateItems().forEach(item => {
+        if (
+            isTodaySpecified(item) &&
+            Array.isArray(item.talk)
+        ) {
+            pool.push(...item.talk);
+        }
+    });
+
+    const talk = takeBalancedTalk(pool, "special_date_pool");
+    if (talk) markSpecialUsed("date");
+    return talk;
+}
+
+
+function getPeriodTalk() {
+    if (!canUseSpecial("period")) return null;
+
+    const pool = [];
+    getMergedSpecialPeriodItems().forEach(period => {
+        if (
+            period &&
+            period.start &&
+            period.end &&
+            isInPeriod(period.start, period.end) &&
+            Array.isArray(period.talk)
+        ) {
+            pool.push(...period.talk);
+        }
+    });
+
+    const talk = takeBalancedTalk(pool, "special_period_pool");
+    if (talk) markSpecialUsed("period");
+    return talk;
+}
+
+
+function getNormalTalk() {
+    const pool = getMergedTalkSection("normal");
+    if (pool.length === 0) return null;
+    if (!dialogueState) resetDialogueState();
+
+    if (dialogueState.normalOrder.length !== pool.length || dialogueState.normalPos >= dialogueState.normalOrder.length) {
+        dialogueState.normalOrder =
+            dialogueState.normalRounds === 0
+                ? Array.from({ length: pool.length }, (_, i) => i)
+                : shuffledIndices(pool.length);
+        dialogueState.normalPos = 0;
+    }
+
+    const index = dialogueState.normalOrder[dialogueState.normalPos];
+    const talk = pool[index];
+    dialogueState.normalPos++;
+
+    if (dialogueState.normalPos >= dialogueState.normalOrder.length) {
+        dialogueState.normalRounds++;
+        dialogueState.normalCycle++;
+    }
+
+    return talk;
+}
+
+
+function getRapidTalk() {
+    const pool = getMergedTalkSection("rapid");
+    if (pool.length === 0) return null;
+    return takeBalancedTalk(pool, "rapid_pool");
+}
+
+
+function getDisplayArea(area) {
+    // タッチエリアも1920x1080のゲーム座標そのまま。
+    // スマホでは画面側が中央クロップされるだけ。
+    return area;
+}
+
+function getArea(x, y) {
+    if (!data) return null;
+    const activeAreas = getActiveAreas();
+    for (let i = activeAreas.length - 1; i >= 0; i--) {
+        const area = activeAreas[i];
+        const displayArea = getDisplayArea(area);
+        if (x >= displayArea.x && x <= displayArea.x + displayArea.width && y >= displayArea.y && y <= displayArea.y + displayArea.height) {
+            return area;
+        }
+    }
+    return null;
+}
+
+function getAreaTalk(area) {
+    if (!area || !Array.isArray(area.talk) || area.talk.length === 0) return null;
+    return takeBalancedTalk(area.talk, "area_" + (getAreaKey(area) || area.name));
+}
+
+function getAreaRapidTalk(area) {
+    if (!area || !Array.isArray(area.rapid) || area.rapid.length === 0) return null;
+    return takeBalancedTalk(area.rapid, "rapid_area_" + (getAreaKey(area) || area.name));
+}
+
+
+function showRapidImpact(x, y) {
+    const impact = document.createElement("div");
+    impact.className = "rapid-impact";
+    impact.style.left = x + "px";
+    impact.style.top = y + "px";
+    game.appendChild(impact);
+    setTimeout(() => impact.remove(), 280);
+}
+
+function shakeCharacter() {
+    if (!character || typeof character.animate !== "function") return;
+
+    // 連打時は「ガタッ」と左右へ1回だけ。上下には動かさない。
+    character.animate(
+        [
+            { transform: "translateX(0px)" },
+            { transform: "translateX(-5px)" },
+            { transform: "translateX(0px)" }
+        ],
+        {
+            duration: 105,
+            easing: "ease-out"
+        }
+    );
+}
+
+function playRapidImpact(x, y) {
+    showRapidImpact(x, y);
+    shakeCharacter();
+}
+
+function showTapFlash(x, y) {
+    const effect = document.createElement("div");
+    effect.className = "tap-flash";
+    effect.style.left = x + "px";
+    effect.style.top = y + "px";
+    game.appendChild(effect);
+    setTimeout(() => effect.remove(), 210);
+}
+
+
+game.addEventListener("pointerdown", function(event) {
+    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls, #choiceBox")) return;
+    if (!data) return;
+
+    const rect = game.getBoundingClientRect();
+    const x = (event.clientX - rect.left) * (1920 / rect.width);
+    const y = (event.clientY - rect.top) * (1080 / rect.height);
+    showTapFlash(x, y);
+});
+
+/* クリックイベント処理（1920x1080基準の座標変換） */
+game.addEventListener("click", function(event) {
+    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls, #choiceBox")) return;
+    if (!data) return;
+
+    // 続きがある間は、新しい台詞抽選より続きを優先。
+    if (activeContinuation && !activeContinuation.waitingChoice) {
+        advanceContinuation();
+        return;
+    }
+    if (activeContinuation?.waitingChoice) return;
+
+    const rect = game.getBoundingClientRect();
+    const scaleX = 1920 / rect.width;
+    const scaleY = 1080 / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+
+    const now = Date.now();
+    const rapid = now - lastClick < RAPID_TIME;
+    lastClick = now;
+
+    // 1. タッチ範囲
+    const area = getArea(x, y);
+    if (area) {
+        if (rapid) {
+            const areaRapidTalk = getAreaRapidTalk(area);
+            if (areaRapidTalk) {
+                playRapidImpact(x, y);
+                speak(areaRapidTalk, x, y);
+                return;
+            }
+        }
+
+        const areaTalk = getAreaTalk(area);
+        if (areaTalk) {
+            speak(areaTalk, x, y);
+            return;
+        }
+    }
+
+    // 2. 日付指定（通常台詞1周につき1回）
+    const dateTalk = getDateTalk();
+    if (dateTalk) {
+        speak(dateTalk, x, y);
+        return;
+    }
+
+    // 3. 期間指定（通常台詞1周につき1回）
+    const periodTalk = getPeriodTalk();
+    if (periodTalk) {
+        speak(periodTalk, x, y);
+        return;
+    }
+
+    // 4. 通常（連打時のみ rapid を通常枠として使用）
+    if (rapid) {
+        const rapidTalk = getRapidTalk();
+        if (rapidTalk) {
+            playRapidImpact(x, y);
+            speak(rapidTalk, x, y);
+            return;
+        }
+    }
+
+    const normalTalk = getNormalTalk();
+    if (normalTalk) {
+        speak(normalTalk, x, y);
+    }
+});
+
+backgroundVideo.addEventListener("playing", () => {
+    if (currentBackground && currentBackground.video) {
+        background.style.display = "none";
+    }
+});
+
+backgroundVideo.addEventListener("error", () => {
+    // MP4が失敗したら付属PNGへ戻す
+    if (currentBackground && currentBackground.image) {
+        background.style.display = "block";
+        backgroundVideo.style.display = "none";
+    }
+});
+
+function setBackground(bg) {
+    currentBackground = bg;
+
+    const imagePath = bg && bg.image ? "backgrounds/" + bg.image : "";
+    const videoPath = bg && bg.video ? "backgrounds/" + bg.video : "";
+
+    // MP4動画背景
+    if (videoPath) {
+        // 読み込み中・再生不可時の静止画フォールバック
+        if (imagePath) {
+            background.src = imagePath;
+            background.style.display = "block";
+            backgroundVideo.poster = imagePath;
+        } else {
+            background.removeAttribute("src");
+            background.style.display = "none";
+            backgroundVideo.removeAttribute("poster");
+        }
+
+        // 同じ動画を選び直した時は無駄にリロードしない
+        const absoluteVideoPath = new URL(videoPath, document.baseURI).href;
+        if (backgroundVideo.src !== absoluteVideoPath) {
+            backgroundVideo.src = videoPath;
+            backgroundVideo.load();
+        }
+
+        backgroundVideo.muted = true;
+        backgroundVideo.loop = true;
+        backgroundVideo.playsInline = true;
+        backgroundVideo.autoplay = true;
+        backgroundVideo.style.display = "block";
+
+        const playPromise = backgroundVideo.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(() => {
+                // autoplayが止められた場合はposter/静止画を見せる
+                backgroundVideo.style.display = imagePath ? "none" : "block";
+                background.style.display = imagePath ? "block" : "none";
+            });
+        }
+        return;
+    }
+
+    // 従来の静止画背景
+    backgroundVideo.pause();
+    backgroundVideo.removeAttribute("src");
+    backgroundVideo.removeAttribute("poster");
+    backgroundVideo.load();
+    backgroundVideo.style.display = "none";
+
+    if (imagePath) {
+        background.src = imagePath;
+        background.style.display = "block";
+    } else {
+        background.removeAttribute("src");
+        background.style.display = "none";
+    }
+}
+
+function setupBackground() {
+    const seasonal = backgrounds.find(bg => bg.season && isInPeriod(bg.season.start, bg.season.end));
+    if (seasonal) setBackground(seasonal);
+}
+
+/* 背景短冊リスト生成 */
+function setupBackgroundMenu() {
+    backgroundList.innerHTML = "";
+    backgrounds.forEach(bg => {
+        const card = document.createElement("div");
+        card.className = "bg-card";
+        
+        if (bg.image) {
+            const img = document.createElement("img");
+            img.className = "bg-card-image";
+            img.src = "backgrounds/" + bg.image;
+            img.alt = bg.name || "";
+            card.appendChild(img);
+        } else if (bg.video) {
+            const preview = document.createElement("video");
+            preview.className = "bg-card-image";
+            preview.src = "backgrounds/" + bg.video;
+            preview.muted = true;
+            preview.loop = true;
+            preview.autoplay = true;
+            preview.playsInline = true;
+            preview.preload = "metadata";
+            card.appendChild(preview);
+        }
+
+        card.onclick = (e) => {
+            e.stopPropagation();
+            setBackground(bg);
+            closeMenu();
+        };
+        backgroundList.appendChild(card);
+    });
+}
+
+
+async function chooseRandomCharacter() {
+    if (!Array.isArray(characters) || characters.length === 0) return;
+
+    let pool = characters;
+
+    // 2人以上いる場合は、なるべく現在表示中のキャラ以外から選ぶ
+    if (characters.length > 1 && data && data.id !== undefined) {
+        const otherCharacters = characters.filter(char => Number(char.id) !== Number(data.id));
+        if (otherCharacters.length > 0) {
+            pool = otherCharacters;
+        }
+    }
+
+    const index = Math.floor(Math.random() * pool.length);
+    const selected = pool[index];
+
+    await loadCharacter(selected);
+}
+
+function setupCharacterMenu() {
+    characterList.innerHTML = "";
+
+    const today = getToday();
+
+    const sortedCharacters = [...characters].sort((a, b) => {
+        const aBirthday = Boolean(
+            a &&
+            a.birthday &&
+            Number(a.birthday.month) === today.month &&
+            Number(a.birthday.day) === today.day
+        );
+
+        const bBirthday = Boolean(
+            b &&
+            b.birthday &&
+            Number(b.birthday.month) === today.month &&
+            Number(b.birthday.day) === today.day
+        );
+
+        // 今日が誕生日のキャラを最優先
+        if (aBirthday !== bBirthday) {
+            return aBirthday ? -1 : 1;
+        }
+
+        // 基本はIDの数字降順
+        return Number(b.id || 0) - Number(a.id || 0);
+    });
+
+    sortedCharacters.forEach(char => {
+        characterList.appendChild(createCharacterCard(char));
+    });
+}
+
+/* キャラクターアイコン用切抜き処理（112x112pxサムネイル） */
+function applyFaceCrop(imgElement, char, face) {
+    const THUMB_SIZE = 112;
+
+    const fallback = () => {
+        imgElement.style.width = "100%";
+        imgElement.style.height = "100%";
+        imgElement.style.objectFit = "cover";
+        imgElement.style.position = "absolute";
+        imgElement.style.left = "0";
+        imgElement.style.top = "0";
+        imgElement.style.maxWidth = "none";
+    };
+
+    if (!face) {
+        fallback();
+        return;
+    }
+
+    /*
+      menu.face はエディターの
+      「このエリアでアイコンを作る」☑エリアから作られる。
+
+      ここで欲しいのはエリアの「中心」だけ。
+      エリア自体はアイコン指定用に大きく作ることもあるので、
+      face.width / face.height をズーム率には絶対に使わない。
+
+      1) face の中心をゲーム座標で取得
+      2) 立ち絵がゲーム画面上でどこに描かれているか復元
+      3) その中心が112x112の中央に来るよう画像を移動
+      4) 顔アイコン用のズームは立ち絵幅を基準に固定
+    */
+    const apply = () => {
+        const naturalW = Number(imgElement.naturalWidth || 0);
+        const naturalH = Number(imgElement.naturalHeight || 0);
+        if (!(naturalW > 0 && naturalH > 0)) {
+            fallback();
+            return;
+        }
+
+        const pos = char?.position || {};
+        const displayWidth = Math.max(1, Number(pos.scale) || 1000);
+        const displayHeight = displayWidth * (naturalH / naturalW);
+
+        const footX = Number(pos.x ?? 960);
+        const footY = Number(pos.y ?? 1080);
+        const displayLeft = footX - displayWidth / 2;
+        const displayTop = footY - displayHeight;
+
+        const faceW = Math.max(1, Number(face.width) || 1);
+        const faceH = Math.max(1, Number(face.height) || 1);
+
+        // ☑したエリアの中心。その大きさはクロップ倍率に使わない。
+        const centerX = Number(face.x || 0) + faceW / 2;
+        const centerY = Number(face.y || 0) + faceH / 2;
+
+        /*
+          顔用の固定クロップ範囲。
+          立ち絵表示幅のおよそ28%を112pxに収める。
+          極端なscaleでも顔が大きすぎ/小さすぎにならないよう制限。
+        */
+        const cropWorldSize = Math.max(
+            220,
+            Math.min(360, displayWidth * 0.28)
+        );
+        const zoom = THUMB_SIZE / cropWorldSize;
+
+        const imageWidth = displayWidth * zoom;
+        const imageHeight = displayHeight * zoom;
+
+        imgElement.style.position = "absolute";
+        imgElement.style.objectFit = "fill";
+        imgElement.style.maxWidth = "none";
+        imgElement.style.width = imageWidth + "px";
+        imgElement.style.height = imageHeight + "px";
+
+        // ☑エリア中心 = アイコン中心(56,56)
+        imgElement.style.left =
+            (THUMB_SIZE / 2 - (centerX - displayLeft) * zoom) + "px";
+        imgElement.style.top =
+            (THUMB_SIZE / 2 - (centerY - displayTop) * zoom) + "px";
+    };
+
+    if (imgElement.complete && imgElement.naturalWidth > 0) {
+        apply();
+    } else {
+        imgElement.addEventListener("load", apply, { once: true });
+        imgElement.addEventListener("error", fallback, { once: true });
+    }
+}
+function applyPortraitIconCrop(imgElement, crop) {
+    const THUMB_SIZE = 112;
+
+    const fallback = () => {
+        imgElement.style.width = "100%";
+        imgElement.style.height = "100%";
+        imgElement.style.objectFit = "cover";
+        imgElement.style.position = "absolute";
+        imgElement.style.left = "0";
+        imgElement.style.top = "0";
+        imgElement.style.maxWidth = "none";
+    };
+
+    if (!crop) {
+        fallback();
+        return;
+    }
+
+    const apply = () => {
+        const naturalW = Number(imgElement.naturalWidth || 0);
+        const naturalH = Number(imgElement.naturalHeight || 0);
+        const size = Math.max(1, Number(crop.size) || 0);
+
+        if (!(naturalW > 0 && naturalH > 0 && size > 0)) {
+            fallback();
+            return;
+        }
+
+        const x = Math.max(0, Number(crop.x) || 0);
+        const y = Math.max(0, Number(crop.y) || 0);
+        const zoom = THUMB_SIZE / size;
+
+        imgElement.style.position = "absolute";
+        imgElement.style.objectFit = "fill";
+        imgElement.style.maxWidth = "none";
+        imgElement.style.width = (naturalW * zoom) + "px";
+        imgElement.style.height = (naturalH * zoom) + "px";
+        imgElement.style.left = (-x * zoom) + "px";
+        imgElement.style.top = (-y * zoom) + "px";
+    };
+
+    if (imgElement.complete && imgElement.naturalWidth > 0) {
+        apply();
+    } else {
+        imgElement.addEventListener("load", apply, { once: true });
+        imgElement.addEventListener("error", fallback, { once: true });
+    }
+}
+
+function createCharacterCard(char) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const thumb = document.createElement("div");
+    thumb.className = "card-character-thumb";
+
+    const img = document.createElement("img");
+    img.className = "card-character-image";
+
+    const menuIcon = char?.menu?.icon;
+    const iconImage = menuIcon?.image || char.image;
+    img.src = getImagePath(iconImage, char);
+
+    // 新エディター：画像そのもののピクセル座標で切り取り。
+    // 旧JSONは従来の menu.face にフォールバック。
+    if (menuIcon?.crop) {
+        applyPortraitIconCrop(img, menuIcon.crop);
+    } else {
+        applyFaceCrop(img, char, char.menu ? char.menu.face : null);
+    }
+
+    thumb.appendChild(img);
+
+    const today = getToday();
+    const isBirthday =
+        char.birthday &&
+        Number(char.birthday.month) === today.month &&
+        Number(char.birthday.day) === today.day;
+
+    if (isBirthday) {
+        const cake = document.createElement("img");
+        cake.src = new URL("icon/cake.png", document.baseURI).href;
+        cake.alt = "";
+        cake.className = "card-birthday-cake";
+        thumb.appendChild(cake);
+    }
+
+    card.appendChild(thumb);
+
+    card.onclick = async (e) => {
+        e.stopPropagation();
+        await loadCharacter(char);
+    };
+    return card;
+}
+
+function showBirthdayChoice(birthdayCharacters) {
+    menu.style.display = "block";
+    birthdayArea.classList.remove("hidden");
+    characterSection.classList.add("hidden");
+    backgroundSection.classList.add("hidden");
+
+    birthdayList.innerHTML = "";
+    birthdayCharacters.forEach(char => {
+        const item = document.createElement("div");
+        item.className = "birthday-item";
+        const cakeIcon = document.createElement("img");
+        cakeIcon.src = new URL("icon/cake.png", document.baseURI).href;
+        cakeIcon.alt = "";
+        cakeIcon.className = "birthday-cake-icon";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = char.name;
+        item.appendChild(cakeIcon);
+        item.appendChild(nameSpan);
+        item.onclick = async (e) => {
+            e.stopPropagation();
+            await loadCharacter(char);
+        };
+        birthdayList.appendChild(item);
+    });
+}
+
+menu.addEventListener("click", (event) => {
+    if (event.target.closest(".card, .bg-card, .birthday-item, .menu-button, .ctrl-btn")) return;
+    closeMenu();
+});
+
+/* タブ切り替え制御 */
+function showCharacterTab() {
+    birthdayArea.classList.add("hidden");
+    backgroundSection.classList.add("hidden");
+    characterSection.classList.remove("hidden");
+    
+    characterMenuButton.classList.add("hidden");
+    backgroundMenuButton.classList.remove("hidden");
+    
+    setupCharacterMenu();
+}
+
+function showBackgroundTab() {
+    birthdayArea.classList.add("hidden");
+    characterSection.classList.add("hidden");
+    backgroundSection.classList.remove("hidden");
+    
+    backgroundMenuButton.classList.add("hidden");
+    characterMenuButton.classList.remove("hidden");
+
+    // 毎回リストの先頭（左端／スマホでは最上部）から見せる。
+    requestAnimationFrame(() => {
+        backgroundList.scrollLeft = 0;
+        backgroundList.scrollTop = 0;
+    });
+}
+
+characterMenuButton.onclick = (e) => {
+    e.stopPropagation();
+    showCharacterTab();
+};
+
+backgroundMenuButton.onclick = (e) => {
+    e.stopPropagation();
+    showBackgroundTab();
+};
+
+openMenu = function() {
+    showCharacterTab();
+    menu.style.display = "block";
+}
+
+closeMenu = function() {
+    menu.style.display = "none";
+}
+
+document.getElementById("openMenu").onclick = (event) => {
+    event.stopPropagation();
+    openMenu();
+};
+
+
+if (costumeSelect) {
+    costumeSelect.addEventListener("click", event => {
+        event.stopPropagation();
+        if (!costumeSelectMenu) return;
+        const willOpen = !costumeSelectMenu.classList.contains("open");
+        costumeSelectMenu.classList.toggle("open", willOpen);
+        costumeSelect.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+}
+
+document.addEventListener("click", event => {
+    if (!event.target.closest("#costumeSelectWrap")) closeCostumeMenu();
+});
+
+if (diceButton) {
+    diceButton.onclick = async (event) => {
+        event.stopPropagation();
+        await chooseRandomCharacter();
+    };
+}
+
+setInterval(loadNewsTicker, 10 * 60 * 1000);
+
+/* 起動 */
+window.addEventListener("resize", () => {
+    resizeGame();
+    applyMobileCharacterTransform();
+    updateDiceIconForViewport();
+});
+resizeGame();
+updateDiceIconForViewport();
+init();
+</script>
+</body>
+</html>

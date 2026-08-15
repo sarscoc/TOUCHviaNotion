@@ -1,0 +1,2893 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Game</title>
+<link rel="shortcut icon" href="#">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    font-family:
+        'M PLUS Rounded 1c',
+        'Hiragino Maru Gothic ProN',
+        'Quicksand',
+        'Arial Round',
+        sans-serif;
+}
+
+/* =========================================================
+   ゲーム本体
+   ========================================================= */
+
+#game {
+    position: relative;
+
+    width: 900px;
+    height: 506px;
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+
+    background: #fff;
+
+    cursor: pointer;
+    user-select: none;
+
+    font-family:
+        'M PLUS Rounded 1c',
+        'Hiragino Maru Gothic ProN',
+        'Quicksand',
+        sans-serif;
+
+    font-weight: 300;
+}
+
+
+/* =========================================================
+   背景
+   ========================================================= */
+
+#background {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    z-index: 0;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   キャラクター（1920x1080画像用に全体配置）
+   ========================================================= */
+
+#character {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 10;
+
+    object-fit: contain;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   フレーム
+   ========================================================= */
+
+#frame {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 20;
+
+    pointer-events: none;
+
+    display: none;
+}
+
+
+/* =========================================================
+   台詞吹き出し（z-index: 300 / 時計より手前・メニューより奥）
+   ========================================================= */
+
+#message {
+    position: absolute;
+
+    z-index: 300;
+
+    display: none;
+
+    width: 300px;
+
+    padding: 16px 22px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(22, 24, 30, 0.85) 0%,
+            rgba(10, 11, 15, 0.89) 70%,
+            rgba(35, 40, 55, 0.78) 100%
+        );
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    color: #f0f2f5;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    letter-spacing: 0.05em;
+
+    pointer-events: none;
+
+    word-break: break-word;
+
+    font-weight: 400;
+
+    clip-path:
+        polygon(
+            8px 0,
+            calc(100% - 8px) 0,
+            100% 8px,
+            100% calc(100% - 8px),
+            calc(100% - 8px) 100%,
+            8px 100%,
+            0 calc(100% - 8px),
+            0 8px
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.2);
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+
+/* =========================================================
+   左上コントロール
+   ========================================================= */
+
+#leftControls {
+    position: absolute;
+
+    top: 16px;
+    left: 16px;
+
+    z-index: 200;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    width: 100px;
+
+    max-height:
+        calc(100% - 100px);
+
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   ボタン
+   ========================================================= */
+
+.ctrl-btn {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+
+    padding: 3px 0;
+
+    border:
+        1.5px solid #ffffff;
+
+    border-radius: 20px;
+
+    background:
+        rgba(255, 255, 255, 0.15);
+
+    backdrop-filter: blur(4px);
+
+    color: #ffffff;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.5px;
+
+    text-align: center;
+
+    transition: all 0.2s;
+
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.6);
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.ctrl-btn:hover {
+    background:
+        rgba(255, 255, 255, 0.3);
+}
+
+
+#costumeSection {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    width: 100%;
+}
+
+
+#costumeList {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    width: 100%;
+}
+
+
+/* =========================================================
+   時計
+   ========================================================= */
+
+#clockArea {
+    position: absolute;
+
+    bottom: 16px;
+    left: 16px;
+
+    z-index: 200;
+
+    pointer-events: none;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+
+    color: #ffffff;
+
+    font-weight: 300;
+
+    text-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.6),
+        0 0 8px rgba(0, 0, 0, 0.4);
+
+    width: 100px;
+}
+
+
+#clockTime {
+    font-size: 40px;
+
+    font-weight: 300;
+
+    line-height: 0.95;
+
+    letter-spacing: -0.5px;
+}
+
+
+#clockDate {
+    font-size: 14px;
+
+    font-weight: 300;
+
+    margin-top: 5px;
+    margin-bottom: 7px;
+
+    letter-spacing: 2.5px;
+
+    line-height: 1.0;
+
+    white-space: nowrap;
+}
+
+
+#clockDay {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    width: 100%;
+
+    padding: 3px 0;
+
+    border:
+        1.5px solid #ffffff;
+
+    border-radius: 20px;
+
+    font-size: 13px;
+
+    font-weight: 300;
+
+    letter-spacing: 1.5px;
+
+    line-height: 1.1;
+
+    background:
+        rgba(255, 255, 255, 0.15);
+
+    backdrop-filter: blur(4px);
+
+    text-transform: uppercase;
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+
+/* =========================================================
+   メニューボタン
+   ========================================================= */
+
+#openMenu {
+    position: absolute;
+
+    top: 16px;
+    right: 16px;
+
+    z-index: 200;
+
+    width: 36px;
+    height: 36px;
+
+    border:
+        1.5px solid #ffffff;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.15);
+
+    backdrop-filter: blur(4px);
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.6);
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.15);
+
+    transition: all 0.2s;
+
+    line-height: 1;
+
+    padding: 0;
+}
+
+#openMenu:hover {
+    background:
+        rgba(255, 255, 255, 0.3);
+}
+
+
+/* =========================================================
+   メニュー (z-index: 500)
+   ========================================================= */
+
+#menu {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 500;
+
+    display: none;
+
+    overflow-y: auto;
+
+    padding: 30px;
+
+    background:
+        rgba(0, 0, 0, 0.4);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    color: #ffffff;
+
+    cursor: pointer;
+}
+
+
+#menu h1,
+#menu h2,
+#menu p,
+#menu span {
+    margin-top: 0;
+
+    color: #ffffff;
+
+    font-weight: 700;
+
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+
+.menu-buttons {
+    position: absolute;
+
+    right: 15px;
+    bottom: 12px;
+
+    display: flex;
+
+    gap: 6px;
+
+    margin: 0;
+
+    z-index: 510;
+}
+
+
+.menu-button {
+    border:
+        1px solid rgba(255, 255, 255, 0.6);
+
+    padding: 4px 10px;
+
+    border-radius: 15px;
+
+    background:
+        rgba(255, 255, 255, 0.15);
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    backdrop-filter: blur(4px);
+
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.6);
+
+    transition: all 0.2s;
+}
+
+.menu-button:hover {
+    background:
+        rgba(255, 255, 255, 0.35);
+}
+
+
+/* =========================================================
+   キャラクター一覧
+   ========================================================= */
+
+.list {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 16px;
+
+    margin-bottom: 20px;
+
+    align-items: center;
+}
+
+
+.card {
+    cursor: pointer;
+
+    background: transparent;
+
+    border: none;
+
+    padding: 0;
+}
+
+
+.card-character-thumb {
+    position: relative;
+
+    width: 56px;
+    height: 56px;
+
+    overflow: hidden;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.35);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+
+    background:
+        rgba(255, 255, 255, 0.1);
+}
+
+
+.card:hover .card-character-thumb {
+    transform: scale(1.08);
+
+    box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+
+.card-character-image {
+    display: block;
+
+    position: absolute;
+
+    max-width: none;
+}
+
+
+/* =========================================================
+   背景一覧
+   ========================================================= */
+
+#backgroundSection {
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+}
+
+
+#backgroundList {
+    display: flex;
+
+    flex-direction: row;
+
+    width: 100%;
+    height: 100%;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    gap: 4px;
+
+    padding: 0;
+    margin: 0;
+
+    scroll-behavior: smooth;
+}
+
+
+#backgroundList::-webkit-scrollbar {
+    height: 6px;
+}
+
+
+#backgroundList::-webkit-scrollbar-track {
+    background:
+        rgba(0, 0, 0, 0.2);
+}
+
+
+#backgroundList::-webkit-scrollbar-thumb {
+    background:
+        rgba(255, 255, 255, 0.4);
+
+    border-radius: 3px;
+}
+
+
+.bg-card {
+    flex: 0 0 120px;
+
+    height: 100%;
+
+    cursor: pointer;
+
+    position: relative;
+
+    overflow: hidden;
+
+    border: none;
+
+    border-radius: 0;
+
+    box-shadow:
+        2px 0 8px rgba(0,0,0,0.3);
+
+    transition:
+        flex-basis 0.25s ease,
+        filter 0.2s ease;
+}
+
+
+.bg-card-image {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+
+    border-radius: 0;
+}
+
+
+.bg-card:hover {
+    flex-basis: 160px;
+
+    filter: brightness(1.15);
+}
+
+
+/* =========================================================
+   誕生日
+   ========================================================= */
+
+#birthdayArea {
+    margin-bottom: 25px;
+}
+
+
+.birthday-empty {
+    color:
+        rgba(255,255,255,0.7);
+}
+
+
+.birthday-item {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 6px 14px;
+
+    border-radius: 15px;
+
+    background:
+        rgba(255, 255, 255, 0.2);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.4);
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.6);
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+
+.birthday-item:hover {
+    background:
+        rgba(255, 255, 255, 0.35);
+}
+
+
+.hidden {
+    display: none !important;
+}
+
+
+/* =========================================================
+   スマホ
+   ========================================================= */
+
+@media (max-width: 899px) {
+
+    body {
+        justify-content: center;
+        align-items: center;
+    }
+
+    #game {
+        flex-shrink: 0;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div id="game">
+
+    <img id="background" alt="">
+
+    <img id="character" alt="">
+
+    <img id="frame" alt="">
+
+
+    <div id="leftControls">
+
+        <a
+            id="personalPage"
+            class="ctrl-btn"
+            href="#"
+            target="_blank"
+            rel="noopener"
+            title="キャラクター個人ページ"
+        >PC Page</a>
+
+
+        <div
+            id="costumeSection"
+            class="hidden"
+        >
+
+            <div id="costumeList"></div>
+
+        </div>
+
+    </div>
+
+
+    <div id="clockArea">
+
+        <div id="clockTime">
+            --:--
+        </div>
+
+        <div id="clockDate">
+            ----/-/--
+        </div>
+
+        <div id="clockDay">
+            ---
+        </div>
+
+    </div>
+
+
+    <button
+        id="openMenu"
+        type="button"
+        aria-label="メニュー"
+    >
+        ☰
+    </button>
+
+
+    <div id="message"></div>
+
+
+    <div id="menu">
+
+        <section
+            id="birthdayArea"
+            class="hidden"
+        >
+
+            <div
+                id="birthdayList"
+                class="list"
+            ></div>
+
+        </section>
+
+
+        <section id="characterSection">
+
+            <div
+                id="characterList"
+                class="list"
+            ></div>
+
+        </section>
+
+
+        <section
+            id="backgroundSection"
+            class="hidden"
+        >
+
+            <div
+                id="backgroundList"
+            ></div>
+
+        </section>
+
+
+        <div class="menu-buttons">
+
+            <button
+                class="menu-button"
+                id="characterMenuButton"
+                type="button"
+            >
+                Character
+            </button>
+
+
+            <button
+                class="menu-button"
+                id="backgroundMenuButton"
+                type="button"
+            >
+                Background
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   DOM
+   ========================================================= */
+
+const game =
+    document.getElementById("game");
+
+const background =
+    document.getElementById("background");
+
+const character =
+    document.getElementById("character");
+
+const frame =
+    document.getElementById("frame");
+
+const message =
+    document.getElementById("message");
+
+const menu =
+    document.getElementById("menu");
+
+const personalPage =
+    document.getElementById("personalPage");
+
+const birthdayArea =
+    document.getElementById("birthdayArea");
+
+const birthdayList =
+    document.getElementById("birthdayList");
+
+const costumeSection =
+    document.getElementById("costumeSection");
+
+const costumeList =
+    document.getElementById("costumeList");
+
+const characterList =
+    document.getElementById("characterList");
+
+const backgroundList =
+    document.getElementById("backgroundList");
+
+const characterSection =
+    document.getElementById("characterSection");
+
+const backgroundSection =
+    document.getElementById("backgroundSection");
+
+const characterMenuButton =
+    document.getElementById("characterMenuButton");
+
+const backgroundMenuButton =
+    document.getElementById("backgroundMenuButton");
+
+const clockDate =
+    document.getElementById("clockDate");
+
+const clockTime =
+    document.getElementById("clockTime");
+
+const clockDay =
+    document.getElementById("clockDay");
+
+
+/* =========================================================
+   状態
+   ========================================================= */
+
+let characters = [];
+
+let backgrounds = [];
+
+let data = null;
+
+let currentCostume = null;
+
+let currentBackground = null;
+
+let count = {};
+
+let lastClick = 0;
+
+let messageTimer = null;
+
+const RAPID_TIME = 400;
+
+
+/* =========================================================
+   初期化
+   ========================================================= */
+
+async function init() {
+
+    startClock();
+
+    try {
+
+        await loadCharacters();
+
+        await loadBackgrounds();
+
+        setupBackground();
+
+        setupBackgroundMenu();
+
+        await chooseInitialCharacter();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "ゲームデータを読み込めませんでした。"
+        );
+    }
+}
+
+
+/* =========================================================
+   時計
+   ========================================================= */
+
+function startClock() {
+
+    const dayOfWeekStr = [
+        "sun",
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat"
+    ];
+
+
+    function updateClock() {
+
+        const now =
+            new Date();
+
+
+        const year =
+            now.getFullYear();
+
+
+        const month =
+            now.getMonth() + 1;
+
+
+        const date =
+            now.getDate();
+
+
+        const day =
+            dayOfWeekStr[now.getDay()];
+
+
+        const hours =
+            String(
+                now.getHours()
+            ).padStart(2, "0");
+
+
+        const minutes =
+            String(
+                now.getMinutes()
+            ).padStart(2, "0");
+
+
+        clockTime.innerText =
+            `${hours}:${minutes}`;
+
+
+        clockDate.innerText =
+            `${year}/${month}/${date}`;
+
+
+        clockDay.innerText =
+            day;
+    }
+
+
+    updateClock();
+
+
+    setInterval(
+        updateClock,
+        1000
+    );
+}
+
+
+/* =========================================================
+   キャラクター読み込み
+   ========================================================= */
+
+async function loadCharacters() {
+
+    const response =
+        await fetch(
+            "characters/index.json"
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "characters/index.json が読み込めません。"
+        );
+    }
+
+
+    let text =
+        await response.text();
+
+
+    text =
+        text
+            .replace(/^\uFEFF/, "")
+            .replace(/^```json\s*/i, "")
+            .replace(/^```\s*/, "")
+            .replace(/\s*```$/, "")
+            .trim();
+
+
+    const firstBracket =
+        text.indexOf("[");
+
+
+    const lastBracket =
+        text.lastIndexOf("]");
+
+
+    if (
+        firstBracket !== -1 &&
+        lastBracket !== -1
+    ) {
+
+        text =
+            text.substring(
+                firstBracket,
+                lastBracket + 1
+            );
+    }
+
+
+    const files =
+        JSON.parse(text);
+
+
+    characters = [];
+
+
+    for (const file of files) {
+        const fileName = file.split("/").pop();
+        const characterId = fileName.replace(/\.json$/i, "");
+        const res = await fetch("characters/" + characterId + "/" + fileName);
+
+
+        if (!res.ok) {
+
+            console.error(
+                "キャラクター読み込み失敗:",
+                "characters/" + characterId + "/" + fileName
+            );
+
+            continue;
+        }
+
+
+        let charText =
+            await res.text();
+
+
+        charText =
+            charText
+                .replace(/^\uFEFF/, "")
+                .replace(/^```json\s*/i, "")
+                .replace(/^```\s*/, "")
+                .replace(/\s*```$/, "")
+                .trim();
+
+
+        const fBracket =
+            charText.indexOf("{");
+
+
+        const lBracket =
+            charText.lastIndexOf("}");
+
+
+        if (
+            fBracket !== -1 &&
+            lBracket !== -1
+        ) {
+
+            charText =
+                charText.substring(
+                    fBracket,
+                    lBracket + 1
+                );
+        }
+
+
+        try {
+
+            const json =
+                JSON.parse(charText);
+
+
+            if (!json.id) {
+
+                json.id =
+                    characterId;
+            }
+
+
+            characters.push(json);
+
+        } catch (e) {
+
+            console.error(
+                "構文エラー:",
+                "characters/" + characterId + "/" + fileName
+            );
+
+            throw e;
+        }
+    }
+}
+
+
+/* =========================================================
+   背景読み込み
+   ========================================================= */
+
+async function loadBackgrounds() {
+
+    const response =
+        await fetch(
+            "backgrounds/backgrounds.json"
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "backgrounds/backgrounds.json が読み込めません。"
+        );
+    }
+
+
+    let bgText =
+        await response.text();
+
+
+    bgText =
+        bgText
+            .replace(/^\uFEFF/, "")
+            .replace(/^```json\s*/i, "")
+            .replace(/^```\s*/, "")
+            .replace(/\s*```$/, "")
+            .trim();
+
+
+    const firstBracket =
+        bgText.indexOf("[");
+
+
+    const lastBracket =
+        bgText.lastIndexOf("]");
+
+
+    if (
+        firstBracket !== -1 &&
+        lastBracket !== -1
+    ) {
+
+        bgText =
+            bgText.substring(
+                firstBracket,
+                lastBracket + 1
+            );
+    }
+
+
+    backgrounds =
+        JSON.parse(bgText);
+}
+
+
+/* =========================================================
+   今日
+   ========================================================= */
+
+function getToday() {
+
+    const now =
+        new Date();
+
+
+    return {
+
+        month:
+            now.getMonth() + 1,
+
+        day:
+            now.getDate()
+    };
+}
+
+
+/* =========================================================
+   誕生日
+   ========================================================= */
+
+function getBirthdayCharacters() {
+
+    const today =
+        getToday();
+
+
+    return characters.filter(
+        char => {
+
+            if (!char.birthday)
+                return false;
+
+
+            return (
+
+                Number(
+                    char.birthday.month
+                ) === today.month
+
+                &&
+
+                Number(
+                    char.birthday.day
+                ) === today.day
+
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   初期キャラクター
+   ========================================================= */
+
+async function chooseInitialCharacter() {
+
+    const birthdayCharacters =
+        getBirthdayCharacters();
+
+
+    if (
+        birthdayCharacters.length === 1
+    ) {
+
+        await loadCharacter(
+            birthdayCharacters[0]
+        );
+
+        return;
+    }
+
+
+    if (
+        birthdayCharacters.length > 1
+    ) {
+
+        showBirthdayChoice(
+            birthdayCharacters
+        );
+
+        return;
+    }
+
+
+    if (
+        characters.length > 0
+    ) {
+
+        const index =
+            Math.floor(
+                Math.random() *
+                characters.length
+            );
+
+
+        await loadCharacter(
+            characters[index]
+        );
+    }
+}
+
+
+/* =========================================================
+   キャラクター読み込み
+   ========================================================= */
+
+async function loadCharacter(char) {
+
+    data =
+        char;
+
+
+    count = {};
+
+
+    currentCostume =
+        null;
+
+
+    if (
+        Array.isArray(
+            data.costumes
+        )
+        &&
+        data.costumes.length > 0
+    ) {
+
+        currentCostume =
+            data.costumes[0];
+
+    } else {
+
+        currentCostume = {
+
+            id:
+                "default",
+
+            name:
+                "通常",
+
+            image:
+                data.image,
+
+            position:
+                data.position || {},
+
+            expressions:
+                {}
+        };
+    }
+
+
+    loadCostume();
+
+    loadFrame();
+
+    setupPersonalPage();
+
+    setupCostumeMenu();
+
+    closeMenu();
+
+    showGreeting();
+}
+
+
+/* =========================================================
+   個人ページ
+   ========================================================= */
+
+function setupPersonalPage() {
+
+    if (
+        data &&
+        data.page
+    ) {
+
+        personalPage.href =
+            data.page;
+
+        personalPage.style.display =
+            "flex";
+
+    } else {
+
+        personalPage.href =
+            "#";
+
+        personalPage.style.display =
+            "none";
+    }
+}
+
+
+/* =========================================================
+   衣装読み込み（1920x1080画像用に単純化）
+   ========================================================= */
+
+function loadCostume() {
+
+    /*
+       キャラクター画像の表示サイズは JSON の position.scale を使用する。
+       ここを省略すると <img> の元画像サイズのまま表示され、
+       JSON に scale を設定していてもゲーム画面では反映されない。
+
+       優先順位:
+       1. 現在の衣装の position
+       2. キャラクター本体の position
+       3. 既定値 500px
+    */
+    const pos =
+        currentCostume && currentCostume.position
+            ? currentCostume.position
+            : (data && data.position ? data.position : {});
+
+    const scale =
+        pos.scale !== undefined && pos.scale !== null
+            ? Number(pos.scale)
+            : 500;
+
+    character.style.width =
+        (Number.isFinite(scale) && scale > 0 ? scale : 500) + "px";
+
+    character.style.height =
+        "auto";
+
+    character.style.maxWidth =
+        "none";
+
+    character.style.left =
+        (Number(pos.x) || 0) + "px";
+
+    character.style.top =
+        (Number(pos.y) || 0) + "px";
+
+    character.onerror = () => {
+        character.onerror = null;
+        character.src = currentCostume.image;
+    };
+
+    character.src = currentCostume.image;
+}
+
+
+/* =========================================================
+   フレーム
+   ========================================================= */
+
+function loadFrame() {
+
+    if (data.frame) {
+
+        frame.src =
+            data.frame;
+
+        frame.style.display =
+            "block";
+
+    } else {
+
+        frame.removeAttribute(
+            "src"
+        );
+
+        frame.style.display =
+            "none";
+    }
+}
+
+
+/* =========================================================
+   表情
+   ========================================================= */
+
+function setExpression(
+    expression
+) {
+
+    const expressions =
+        currentCostume.expressions ||
+        {};
+
+
+    if (
+        !expression ||
+        expression === "通常"
+    ) {
+
+        character.onerror =
+            null;
+
+        character.src =
+            currentCostume.image;
+
+        return;
+    }
+
+
+    if (
+        expressions[expression]
+    ) {
+
+        character.onerror =
+            () => {
+
+                character.onerror =
+                    null;
+
+                character.src =
+                    currentCostume.image;
+            };
+
+
+        character.src =
+            expressions[expression];
+
+        return;
+    }
+
+
+    character.onerror =
+        null;
+
+    character.src =
+        currentCostume.image;
+}
+
+
+/* =========================================================
+   会話・メッセージ処理
+   ========================================================= */
+
+function speak(
+    talk,
+    clickX,
+    clickY,
+    forcePosition = null
+) {
+
+    if (!talk)
+        return;
+
+
+    setExpression(
+        talk.expression ||
+        "通常"
+    );
+
+
+    message.innerText =
+        talk.text;
+
+
+    message.style.display =
+        "block";
+
+
+    const gameRect =
+        game.getBoundingClientRect();
+
+
+    const msgWidth =
+        message.offsetWidth ||
+        300;
+
+
+    const msgHeight =
+        message.offsetHeight ||
+        80;
+
+
+    const offset =
+        20;
+
+
+    let messageX;
+
+    let messageY;
+
+
+    if (forcePosition) {
+
+        messageX =
+            forcePosition.x -
+            msgWidth / 2;
+
+
+        messageY =
+            forcePosition.y -
+            msgHeight / 2;
+
+    } else {
+
+        const isLeftHalf =
+            clickX <
+            gameRect.width / 2;
+
+
+        messageX =
+            isLeftHalf
+                ? clickX - msgWidth - offset
+                : clickX + offset;
+
+
+        messageY =
+            clickY -
+            msgHeight / 2;
+    }
+
+
+    if (messageX < 10)
+        messageX = 10;
+
+
+    if (
+        messageX + msgWidth >
+        gameRect.width - 10
+    ) {
+
+        messageX =
+            gameRect.width -
+            msgWidth -
+            10;
+    }
+
+
+    if (messageY < 10)
+        messageY = 10;
+
+
+    if (
+        messageY + msgHeight >
+        gameRect.height - 10
+    ) {
+
+        messageY =
+            gameRect.height -
+            msgHeight -
+            10;
+    }
+
+
+    message.style.left =
+        messageX + "px";
+
+
+    message.style.top =
+        messageY + "px";
+
+
+    if (messageTimer)
+        clearTimeout(
+            messageTimer
+        );
+
+
+    messageTimer =
+        setTimeout(
+            () => {
+
+                message.style.display =
+                    "none";
+
+                setExpression(
+                    "通常"
+                );
+
+            },
+            3000
+        );
+}
+
+
+function showGreeting() {
+
+    if (
+        !data.talk ||
+        !Array.isArray(
+            data.talk.greeting
+        ) ||
+        data.talk.greeting.length === 0
+    )
+        return;
+
+
+    const centerX =
+        game.clientWidth / 2;
+
+
+    const centerY =
+        game.clientHeight * 0.45;
+
+
+    speak(
+        data.talk.greeting[0],
+        centerX,
+        centerY,
+        {
+            x: centerX,
+            y: centerY
+        }
+    );
+}
+
+
+function dateToNumber(value) {
+
+    const [
+        month,
+        day
+    ] =
+        value
+            .split("-")
+            .map(Number);
+
+
+    return (
+        month * 100 +
+        day
+    );
+}
+
+
+function isInPeriod(
+    start,
+    end
+) {
+
+    const today =
+        getToday();
+
+
+    const current =
+        today.month * 100 +
+        today.day;
+
+
+    const startNumber =
+        dateToNumber(start);
+
+
+    const endNumber =
+        dateToNumber(end);
+
+
+    if (
+        startNumber <= endNumber
+    ) {
+
+        return (
+            current >= startNumber &&
+            current <= endNumber
+        );
+    }
+
+
+    return (
+        current >= startNumber ||
+        current <= endNumber
+    );
+}
+
+
+function getSpecialTalks() {
+
+    const talks = [];
+
+    const today =
+        getToday();
+
+
+    if (
+        data.birthday &&
+        Number(
+            data.birthday.month
+        ) === today.month &&
+        Number(
+            data.birthday.day
+        ) === today.day &&
+        Array.isArray(
+            data.birthday.talk
+        )
+    ) {
+
+        talks.push(
+            ...data.birthday.talk
+        );
+    }
+
+
+    if (
+        data.special &&
+        Array.isArray(
+            data.special.dates
+        )
+    ) {
+
+        data.special.dates.forEach(
+            item => {
+
+                if (
+                    Number(item.month)
+                    === today.month &&
+
+                    Number(item.day)
+                    === today.day &&
+
+                    Array.isArray(
+                        item.talk
+                    )
+                ) {
+
+                    talks.push(
+                        ...item.talk
+                    );
+                }
+            }
+        );
+    }
+
+
+    if (
+        data.special &&
+        data.special.months
+    ) {
+
+        const monthTalk =
+            data.special.months[
+                String(
+                    today.month
+                )
+            ];
+
+
+        if (
+            Array.isArray(
+                monthTalk
+            )
+        ) {
+
+            talks.push(
+                ...monthTalk
+            );
+        }
+    }
+
+
+    if (
+        data.special &&
+        Array.isArray(
+            data.special.periods
+        )
+    ) {
+
+        data.special.periods.forEach(
+            period => {
+
+                if (
+                    isInPeriod(
+                        period.start,
+                        period.end
+                    ) &&
+                    Array.isArray(
+                        period.talk
+                    )
+                ) {
+
+                    talks.push(
+                        ...period.talk
+                    );
+                }
+            }
+        );
+    }
+
+
+    return talks;
+}
+
+
+function getNormalTalk() {
+
+    const pool = [];
+
+
+    if (
+        data.talk &&
+        Array.isArray(
+            data.talk.normal
+        )
+    ) {
+
+        pool.push(
+            ...data.talk.normal
+        );
+    }
+
+
+    pool.push(
+        ...getSpecialTalks()
+    );
+
+
+    if (
+        pool.length === 0
+    )
+        return null;
+
+
+    const key =
+        "normal";
+
+
+    if (
+        count[key] === undefined
+    )
+        count[key] = 0;
+
+
+    const talk =
+        pool[
+            count[key] %
+            pool.length
+        ];
+
+
+    count[key]++;
+
+
+    return talk;
+}
+
+
+function getRapidTalk() {
+
+    if (
+        !data.talk ||
+        !Array.isArray(
+            data.talk.rapid
+        ) ||
+        data.talk.rapid.length === 0
+    )
+        return null;
+
+
+    const key =
+        "rapid";
+
+
+    if (
+        count[key] === undefined
+    )
+        count[key] = 0;
+
+
+    const talk =
+        data.talk.rapid[
+            count[key] %
+            data.talk.rapid.length
+        ];
+
+
+    count[key]++;
+
+
+    return talk;
+}
+
+
+function getArea(
+    x,
+    y
+) {
+
+    if (
+        !data ||
+        !Array.isArray(
+            data.areas
+        )
+    )
+        return null;
+
+
+    for (
+        let i =
+            data.areas.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        const area =
+            data.areas[i];
+
+
+        if (
+            x >= area.x &&
+            x <=
+                area.x +
+                area.width &&
+
+            y >= area.y &&
+            y <=
+                area.y +
+                area.height
+        ) {
+
+            return area;
+        }
+    }
+
+
+    return null;
+}
+
+
+function getAreaTalk(
+    area
+) {
+
+    if (
+        !area ||
+        !Array.isArray(
+            area.talk
+        ) ||
+        area.talk.length === 0
+    )
+        return null;
+
+
+    const key =
+        "area_" +
+        area.name;
+
+
+    if (
+        count[key] === undefined
+    )
+        count[key] = 0;
+
+
+    const talk =
+        area.talk[
+            count[key] %
+            area.talk.length
+        ];
+
+
+    count[key]++;
+
+
+    return talk;
+}
+
+
+function getAreaRapidTalk(
+    area
+) {
+
+    if (
+        !area ||
+        !Array.isArray(
+            area.rapid
+        ) ||
+        area.rapid.length === 0
+    )
+        return null;
+
+
+    const key =
+        "rapid_area_" +
+        area.name;
+
+
+    if (
+        count[key] === undefined
+    )
+        count[key] = 0;
+
+
+    const talk =
+        area.rapid[
+            count[key] %
+            area.rapid.length
+        ];
+
+
+    count[key]++;
+
+
+    return talk;
+}
+
+
+/* =========================================================
+   クリック
+   ========================================================= */
+
+game.addEventListener(
+    "click",
+    function(event) {
+
+        if (
+            event.target.closest(
+                "#menu, #openMenu, #leftControls"
+            )
+        )
+            return;
+
+
+        if (!data)
+            return;
+
+
+        const rect =
+            game.getBoundingClientRect();
+
+
+        const x =
+            event.clientX -
+            rect.left;
+
+
+        const y =
+            event.clientY -
+            rect.top;
+
+
+        const now =
+            Date.now();
+
+
+        const rapid =
+            now - lastClick <
+            RAPID_TIME;
+
+
+        lastClick =
+            now;
+
+
+        const area =
+            getArea(x, y);
+
+
+        if (area) {
+
+            if (rapid) {
+
+                const rapidTalk =
+                    getAreaRapidTalk(
+                        area
+                    );
+
+
+                if (rapidTalk) {
+
+                    speak(
+                        rapidTalk,
+                        x,
+                        y
+                    );
+
+                    return;
+                }
+            }
+
+
+            const areaTalk =
+                getAreaTalk(area);
+
+
+            if (areaTalk) {
+
+                speak(
+                    areaTalk,
+                    x,
+                    y
+                );
+
+                return;
+            }
+        }
+
+
+        if (rapid) {
+
+            const rapidTalk =
+                getRapidTalk();
+
+
+            if (rapidTalk) {
+
+                speak(
+                    rapidTalk,
+                    x,
+                    y
+                );
+
+                return;
+            }
+        }
+
+
+        const normalTalk =
+            getNormalTalk();
+
+
+        if (normalTalk) {
+
+            speak(
+                normalTalk,
+                x,
+                y
+            );
+        }
+    }
+);
+
+
+/* =========================================================
+   背景
+   ========================================================= */
+
+function setBackground(bg) {
+
+    currentBackground =
+        bg;
+
+
+    background.src =
+        "backgrounds/" +
+        bg.image;
+}
+
+
+function setupBackground() {
+
+    const seasonal =
+        backgrounds.find(
+            bg =>
+                bg.season &&
+                isInPeriod(
+                    bg.season.start,
+                    bg.season.end
+                )
+        );
+
+
+    if (seasonal)
+        setBackground(
+            seasonal
+        );
+}
+
+
+function setupBackgroundMenu() {
+
+    backgroundList.innerHTML =
+        "";
+
+
+    backgrounds.forEach(
+        bg => {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "bg-card";
+
+
+            const img =
+                document.createElement(
+                    "img"
+                );
+
+
+            img.className =
+                "bg-card-image";
+
+
+            img.src =
+                "backgrounds/" +
+                bg.image;
+
+
+            img.alt =
+                bg.name;
+
+
+            card.appendChild(img);
+
+
+            card.onclick =
+                (e) => {
+
+                    e.stopPropagation();
+
+                    setBackground(
+                        bg
+                    );
+
+                    closeMenu();
+                };
+
+
+            backgroundList.appendChild(
+                card
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   衣装
+   ========================================================= */
+
+function setupCostumeMenu() {
+
+    costumeList.innerHTML =
+        "";
+
+
+    if (
+        !data ||
+        !Array.isArray(
+            data.costumes
+        ) ||
+        data.costumes.length <= 1
+    ) {
+
+        costumeSection.classList.add(
+            "hidden"
+        );
+
+        return;
+    }
+
+
+    const otherCostumes =
+        data.costumes.filter(
+            costume =>
+                costume !==
+                currentCostume
+        );
+
+
+    if (
+        otherCostumes.length === 0
+    ) {
+
+        costumeSection.classList.add(
+            "hidden"
+        );
+
+        return;
+    }
+
+
+    costumeSection.classList.remove(
+        "hidden"
+    );
+
+
+    otherCostumes.forEach(
+        costume => {
+
+            const btn =
+                document.createElement(
+                    "button"
+                );
+
+
+            btn.type =
+                "button";
+
+
+            btn.className =
+                "ctrl-btn";
+
+
+            btn.innerText =
+                costume.name;
+
+
+            btn.onclick =
+                (e) => {
+
+                    e.stopPropagation();
+
+
+                    currentCostume =
+                        costume;
+
+
+                    loadCostume();
+
+
+                    setupCostumeMenu();
+                };
+
+
+            costumeList.appendChild(
+                btn
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   キャラクターメニュー
+   ========================================================= */
+
+function setupCharacterMenu() {
+
+    characterList.innerHTML =
+        "";
+
+
+    characters.forEach(
+        char => {
+
+            characterList.appendChild(
+                createCharacterCard(
+                    char
+                )
+            );
+        }
+    );
+}
+
+
+function applyFaceCrop(
+    imgElement,
+    position,
+    face
+) {
+
+    if (!face) {
+
+        imgElement.style.width =
+            "100%";
+
+        imgElement.style.height =
+            "100%";
+
+        imgElement.style.objectFit =
+            "cover";
+
+        imgElement.style.position =
+            "absolute";
+
+        imgElement.style.left =
+            "0";
+
+        imgElement.style.top =
+            "0";
+
+        return;
+    }
+
+
+    const pos =
+        position || {};
+
+
+    const scale =
+        pos.scale || 250;
+
+
+    const ratio =
+        56 / face.width;
+
+
+    imgElement.style.width =
+        scale * ratio +
+        "px";
+
+
+    imgElement.style.height =
+        "auto";
+
+
+    imgElement.style.maxWidth =
+        "none";
+
+
+    imgElement.style.position =
+        "absolute";
+
+
+    imgElement.style.left =
+        -(
+            (face.x -
+                (pos.x || 0)) *
+            ratio
+        ) + "px";
+
+
+    imgElement.style.top =
+        -(
+            (face.y -
+                (pos.y || 0)) *
+            ratio
+        ) + "px";
+}
+
+
+function createCharacterCard(
+    char
+) {
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+
+    card.className =
+        "card";
+
+
+    const thumb =
+        document.createElement(
+            "div"
+        );
+
+
+    thumb.className =
+        "card-character-thumb";
+
+
+    const img =
+        document.createElement(
+            "img"
+        );
+
+
+    img.className =
+        "card-character-image";
+
+
+    img.src =
+        char.image;
+
+
+    applyFaceCrop(
+        img,
+        char.position,
+        char.menu
+            ? char.menu.face
+            : null
+    );
+
+
+    thumb.appendChild(
+        img
+    );
+
+
+    card.appendChild(
+        thumb
+    );
+
+
+    card.onclick =
+        async (e) => {
+
+            e.stopPropagation();
+
+            await loadCharacter(
+                char
+            );
+        };
+
+
+    return card;
+}
+
+
+/* =========================================================
+   誕生日
+   ========================================================= */
+
+function showBirthdayChoice(
+    birthdayCharacters
+) {
+
+    menu.style.display =
+        "block";
+
+
+    birthdayArea.classList.remove(
+        "hidden"
+    );
+
+
+    characterSection.classList.add(
+        "hidden"
+    );
+
+
+    backgroundSection.classList.add(
+        "hidden"
+    );
+
+
+    birthdayList.innerHTML =
+        "";
+
+
+    birthdayCharacters.forEach(
+        char => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.className =
+                "birthday-item";
+
+
+            item.innerText =
+                char.name +
+                " 🎂";
+
+
+            item.onclick =
+                async (e) => {
+
+                    e.stopPropagation();
+
+                    await loadCharacter(
+                        char
+                    );
+                };
+
+
+            birthdayList.appendChild(
+                item
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   メニュー
+   ========================================================= */
+
+menu.addEventListener(
+    "click",
+    (event) => {
+
+        if (
+            event.target.closest(
+                ".card, .bg-card, .birthday-item, .menu-button, .ctrl-btn"
+            )
+        )
+            return;
+
+
+        closeMenu();
+    }
+);
+
+
+function showCharacterTab() {
+
+    birthdayArea.classList.add(
+        "hidden"
+    );
+
+
+    backgroundSection.classList.add(
+        "hidden"
+    );
+
+
+    characterSection.classList.remove(
+        "hidden"
+    );
+
+
+    characterMenuButton.classList.add(
+        "hidden"
+    );
+
+
+    backgroundMenuButton.classList.remove(
+        "hidden"
+    );
+
+
+    setupCharacterMenu();
+}
+
+
+function showBackgroundTab() {
+
+    birthdayArea.classList.add(
+        "hidden"
+    );
+
+
+    characterSection.classList.add(
+        "hidden"
+    );
+
+
+    backgroundSection.classList.remove(
+        "hidden"
+    );
+
+
+    backgroundMenuButton.classList.add(
+        "hidden"
+    );
+
+
+    characterMenuButton.classList.remove(
+        "hidden"
+    );
+}
+
+
+characterMenuButton.onclick =
+    (e) => {
+
+        e.stopPropagation();
+
+        showCharacterTab();
+    };
+
+
+backgroundMenuButton.onclick =
+    (e) => {
+
+        e.stopPropagation();
+
+        showBackgroundTab();
+    };
+
+
+function openMenu() {
+
+    showCharacterTab();
+
+    menu.style.display =
+        "block";
+}
+
+
+function closeMenu() {
+
+    menu.style.display =
+        "none";
+}
+
+
+document
+    .getElementById("openMenu")
+    .onclick =
+    (event) => {
+
+        event.stopPropagation();
+
+        openMenu();
+    };
+
+
+/* =========================================================
+   起動
+   ========================================================= */
+
+init();
+
+</script>
+
+</body>
+</html>
