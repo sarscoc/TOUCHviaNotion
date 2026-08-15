@@ -63,7 +63,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     background: #fff;
 }
 
-#character { position: absolute;  object-fit: contain; pointer-events: none; transform-origin: 50% 88%;  will-change: transform; }
+#character { position: absolute;  object-fit: contain; pointer-events: none; transform-origin: 50% 88%;  will-change: transform; visibility: hidden; }
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
 /* 台詞吹出し */
@@ -2726,6 +2726,7 @@ window.setCharacterVariant = setCharacterVariant;
 
 let baseImageMetrics = null;
 let baseImageMetricsPath = "";
+let characterImageLoadToken = 0;
 
 function loadBaseImageMetrics(callback) {
     if (!data || !data.image) {
@@ -2814,14 +2815,38 @@ function loadCharacterImage() {
     const variant = getCharacterVariant();
     const imageName = variant?.image || data.image;
     const imgPath = getImagePath(imageName);
-    if (!imgPath) return;
+
+    // 画像が無い場合も、未配置のimgだけが左端に見えないよう隠す。
+    if (!imgPath) {
+        character.style.visibility = "hidden";
+        return;
+    }
+
+    // 画像の読み込み・差分切替が重なった時、古いonloadが後から位置を上書きしないための番号。
+    const loadToken = ++characterImageLoadToken;
+    const expectedSrc = new URL(imgPath, document.baseURI).href;
+
+    // 先に完全に隠してからsrcを切り替え、座標計算が終わった後だけ表示する。
+    // これで初回ロード時に左側へ一瞬「ぺっ」と出てから移動する現象を防ぐ。
+    character.style.visibility = "hidden";
+
+    const reveal = () => {
+        if (loadToken !== characterImageLoadToken) return;
+        character.style.visibility = "visible";
+    };
 
     const apply = () => {
+        if (loadToken !== characterImageLoadToken) return;
         if (!character.naturalWidth) return;
+
+        const currentSrc = character.currentSrc || character.src || "";
+        if (currentSrc && currentSrc !== expectedSrc) return;
 
         if (variant) {
             loadBaseImageMetrics(metrics => {
+                if (loadToken !== characterImageLoadToken) return;
                 applyAnchoredCharacterGeometry(character, position, variant, metrics);
+                reveal();
             });
         } else {
             // 通常立ち絵を表示した時点で基準画像サイズもキャッシュ。
@@ -2831,15 +2856,25 @@ function loadCharacterImage() {
                 height: character.naturalHeight
             };
             applyAnchoredCharacterGeometry(character, position, null, baseImageMetrics);
+            reveal();
         }
     };
 
     character.onerror = () => {
+        if (loadToken === characterImageLoadToken) {
+            character.style.visibility = "hidden";
+        }
         console.error("画像読み込み失敗:", imgPath, "source:", data?._sourcePath || "(unknown)");
     };
     character.onload = apply;
-    character.src = imgPath;
 
+    const currentAttr = character.getAttribute("src") || "";
+    const currentExpected = currentAttr ? new URL(currentAttr, document.baseURI).href : "";
+    if (currentExpected !== expectedSrc) {
+        character.src = imgPath;
+    }
+
+    // キャッシュ済み画像や同じ画像の再配置ではloadイベントが来ない場合があるため即時再計算。
     if (character.complete && character.naturalWidth) {
         requestAnimationFrame(apply);
     }
@@ -3343,6 +3378,38 @@ function isInPeriod(start, end) {
     return current >= startNumber || current <= endNumber;
 }
 
+/*
+  Notionの複数条件は AND（絞り込み）として扱う。
+  例：
+    エリア1 + 連打       -> エリア1を連打した時だけ
+    エリア1 + 月日       -> その日だけ、エリア1で有効
+    エリア1 + 連打 + 月日 -> その日だけ、エリア1を連打した時だけ
+
+  update-dialogue.mjs が talk.when に補助条件を書き出す。
+  when が無い既存dialogue.jsonは従来どおり常時有効。
+*/
+function isTalkConditionActive(talk, context = {}) {
+    const when = talk && talk.when && typeof talk.when === "object" ? talk.when : null;
+    if (!when) return true;
+
+    const isGreeting = Boolean(context.greeting);
+    const isRapid = Boolean(context.rapid);
+
+    if (when.greeting === true && !isGreeting) return false;
+    if (when.greeting === false && isGreeting) return false;
+    if (when.rapid === true && !isRapid) return false;
+    if (when.rapid === false && isRapid) return false;
+
+    if (when.date && !isTodaySpecified({ date: when.date })) return false;
+    if (when.start && when.end && !isInPeriod(when.start, when.end)) return false;
+
+    return true;
+}
+
+function conditionedTalkPool(pool, context = {}) {
+    return (Array.isArray(pool) ? pool : []).filter(talk => isTalkConditionActive(talk, context));
+}
+
 
 function getDateTalk() {
     if (!canUseSpecial("date")) return null;
@@ -3385,8 +3452,8 @@ function getPeriodTalk() {
 }
 
 
-function getNormalTalk() {
-    const pool = getMergedTalkSection("normal");
+function getNormalTalk(context = { greeting: false, rapid: false }) {
+    const pool = conditionedTalkPool(getMergedTalkSection("normal"), context);
     if (pool.length === 0) return null;
     if (!dialogueState) resetDialogueState();
 
@@ -3411,8 +3478,8 @@ function getNormalTalk() {
 }
 
 
-function getRapidTalk() {
-    const pool = getMergedTalkSection("rapid");
+function getRapidTalk(context = { greeting: false, rapid: true }) {
+    const pool = conditionedTalkPool(getMergedTalkSection("rapid"), context);
     if (pool.length === 0) return null;
     return takeBalancedTalk(pool, "rapid_pool");
 }
@@ -3437,14 +3504,18 @@ function getArea(x, y) {
     return null;
 }
 
-function getAreaTalk(area) {
+function getAreaTalk(area, context = { greeting: false, rapid: false }) {
     if (!area || !Array.isArray(area.talk) || area.talk.length === 0) return null;
-    return takeBalancedTalk(area.talk, "area_" + (getAreaKey(area) || area.name));
+    const pool = conditionedTalkPool(area.talk, context);
+    if (pool.length === 0) return null;
+    return takeBalancedTalk(pool, "area_" + (getAreaKey(area) || area.name));
 }
 
-function getAreaRapidTalk(area) {
+function getAreaRapidTalk(area, context = { greeting: false, rapid: true }) {
     if (!area || !Array.isArray(area.rapid) || area.rapid.length === 0) return null;
-    return takeBalancedTalk(area.rapid, "rapid_area_" + (getAreaKey(area) || area.name));
+    const pool = conditionedTalkPool(area.rapid, context);
+    if (pool.length === 0) return null;
+    return takeBalancedTalk(pool, "rapid_area_" + (getAreaKey(area) || area.name));
 }
 
 
@@ -3521,11 +3592,13 @@ game.addEventListener("click", function(event) {
     const rapid = now - lastClick < RAPID_TIME;
     lastClick = now;
 
+    const talkContext = { greeting: false, rapid };
+
     // 1. タッチ範囲
     const area = getArea(x, y);
     if (area) {
         if (rapid) {
-            const areaRapidTalk = getAreaRapidTalk(area);
+            const areaRapidTalk = getAreaRapidTalk(area, talkContext);
             if (areaRapidTalk) {
                 playRapidImpact(x, y);
                 speak(areaRapidTalk, x, y);
@@ -3533,7 +3606,7 @@ game.addEventListener("click", function(event) {
             }
         }
 
-        const areaTalk = getAreaTalk(area);
+        const areaTalk = getAreaTalk(area, talkContext);
         if (areaTalk) {
             speak(areaTalk, x, y);
             return;
@@ -3556,7 +3629,7 @@ game.addEventListener("click", function(event) {
 
     // 4. 通常（連打時のみ rapid を通常枠として使用）
     if (rapid) {
-        const rapidTalk = getRapidTalk();
+        const rapidTalk = getRapidTalk(talkContext);
         if (rapidTalk) {
             playRapidImpact(x, y);
             speak(rapidTalk, x, y);
@@ -3564,7 +3637,7 @@ game.addEventListener("click", function(event) {
         }
     }
 
-    const normalTalk = getNormalTalk();
+    const normalTalk = getNormalTalk(talkContext);
     if (normalTalk) {
         speak(normalTalk, x, y);
     }
