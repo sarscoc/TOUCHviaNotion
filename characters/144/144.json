@@ -36,9 +36,11 @@
     "icon": {
       "image": "144.webp",
       "crop": {
-        "x": 293,
-        "y": 62,
-        "size": 485
+        "x": 287,
+        "y": 64,
+        "size": 485,
+        "sourceWidth": 1051,
+        "sourceHeight": 2400
       }
     }
   }
