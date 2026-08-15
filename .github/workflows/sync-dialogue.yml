@@ -28,14 +28,14 @@ jobs:
       - name: Build dialogue.json from Notion
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          NOTION_DIALOGUE_DATABASE_ID: "3bd4fddb0aaa800da296f7f5b460c014"
         run: node scripts/update-dialogue.mjs
 
-      - name: Commit changed dialogue files
+      - name: Commit and push changed dialogue files
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add characters/*/dialogue.json
 
           if git diff --cached --quiet; then
@@ -44,4 +44,26 @@ jobs:
           fi
 
           git commit -m "Sync dialogue from Notion"
-          git push
+
+          for attempt in 1 2 3; do
+            echo "Push attempt $attempt"
+
+            git fetch origin main
+
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Rebase conflict. Stopping to avoid overwriting remote changes."
+              exit 1
+            fi
+
+            if git push origin HEAD:main; then
+              echo "Push succeeded."
+              exit 0
+            fi
+
+            echo "Remote changed during push. Retrying..."
+            sleep 2
+          done
+
+          echo "Push failed after 3 attempts."
+          exit 1
