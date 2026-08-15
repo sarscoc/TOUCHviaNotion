@@ -3721,79 +3721,6 @@ function setupCharacterMenu() {
 }
 
 /* キャラクターアイコン用切抜き処理（112x112pxサムネイル） */
-function applyFaceCrop(imgElement, char, face) {
-    const THUMB_SIZE = 112;
-
-    const fallback = () => {
-        imgElement.style.width = "100%";
-        imgElement.style.height = "100%";
-        imgElement.style.objectFit = "cover";
-        imgElement.style.position = "absolute";
-        imgElement.style.left = "0";
-        imgElement.style.top = "0";
-        imgElement.style.maxWidth = "none";
-    };
-
-    if (!face) {
-        fallback();
-        return;
-    }
-
-    /*
-      旧JSONの menu.face でも、
-      エディターで決めた範囲をそのままゲーム側アイコンへ反映する。
-
-      - face.x / face.y / face.width / face.height をそのまま使う
-      - 中心だけ拾って再計算しない
-      - 選択範囲全体が 112x112 に入るよう、長辺基準で等倍縮小する
-      - 短辺側は中央寄せにして、エディターで見た位置関係を保つ
-    */
-    const apply = () => {
-        const naturalW = Number(imgElement.naturalWidth || 0);
-        const naturalH = Number(imgElement.naturalHeight || 0);
-        if (!(naturalW > 0 && naturalH > 0)) {
-            fallback();
-            return;
-        }
-
-        const pos = char?.position || {};
-        const displayWidth = Math.max(1, Number(pos.scale) || 1000);
-        const displayHeight = displayWidth * (naturalH / naturalW);
-
-        const footX = Number(pos.x ?? 960);
-        const footY = Number(pos.y ?? 1080);
-        const displayLeft = footX - displayWidth / 2;
-        const displayTop = footY - displayHeight;
-
-        const faceX = Number(face.x || 0);
-        const faceY = Number(face.y || 0);
-        const faceW = Math.max(1, Number(face.width) || 1);
-        const faceH = Math.max(1, Number(face.height) || 1);
-
-        const cropWorldSize = Math.max(faceW, faceH);
-        const zoom = THUMB_SIZE / cropWorldSize;
-
-        const imageWidth = displayWidth * zoom;
-        const imageHeight = displayHeight * zoom;
-        const offsetX = (THUMB_SIZE - faceW * zoom) / 2;
-        const offsetY = (THUMB_SIZE - faceH * zoom) / 2;
-
-        imgElement.style.position = "absolute";
-        imgElement.style.objectFit = "fill";
-        imgElement.style.maxWidth = "none";
-        imgElement.style.width = imageWidth + "px";
-        imgElement.style.height = imageHeight + "px";
-        imgElement.style.left = (offsetX - (faceX - displayLeft) * zoom) + "px";
-        imgElement.style.top = (offsetY - (faceY - displayTop) * zoom) + "px";
-    };
-
-    if (imgElement.complete && imgElement.naturalWidth > 0) {
-        apply();
-    } else {
-        imgElement.addEventListener("load", apply, { once: true });
-        imgElement.addEventListener("error", fallback, { once: true });
-    }
-}
 function applyPortraitIconCrop(imgElement, crop) {
     const THUMB_SIZE = 112;
 
@@ -3857,13 +3784,9 @@ function createCharacterCard(char) {
     const iconImage = menuIcon?.image || char.image;
     img.src = getImagePath(iconImage, char);
 
-    // 新エディター：画像そのもののピクセル座標で切り取り。
-    // 旧JSONは従来の menu.face にフォールバック。
-    if (menuIcon?.crop) {
-        applyPortraitIconCrop(img, menuIcon.crop);
-    } else {
-        applyFaceCrop(img, char, char.menu ? char.menu.face : null);
-    }
+    // 現行JSON：menu.icon.crop の画像ピクセル座標をそのまま112x112へ切り取り。
+    // アイコン指定がない場合だけ通常の cover 表示へフォールバック。
+    applyPortraitIconCrop(img, menuIcon?.crop || null);
 
     thumb.appendChild(img);
 
