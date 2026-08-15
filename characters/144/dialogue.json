@@ -1,0 +1,80 @@
+{
+  "talk": {
+    "greeting": [
+      {
+        "text": "こん　にちは……"
+      }
+    ],
+    "normal": [
+      {
+        "text": "な、なんで、はなしかけるの"
+      },
+      {
+        "text": "ゆうのこと、すき？"
+      },
+      {
+        "text": "？"
+      },
+      {
+        "text": "うん"
+      },
+      {
+        "text": "ん、ざりがに　つれたの"
+      },
+      {
+        "text": "どろだんご、みて"
+      },
+      {
+        "text": "ゆう、ねむいなぁ……"
+      },
+      {
+        "text": "いっしょにおよぐ？"
+      }
+    ],
+    "rapid": [
+      {
+        "text": "や",
+        "style": {
+          "animation": "tremble"
+        }
+      },
+      {
+        "text": "ふぐ、",
+        "style": {
+          "animation": "tremble"
+        }
+      },
+      {
+        "text": "おぇ……",
+        "style": {
+          "animation": "tremble"
+        }
+      },
+      {
+        "text": "うう……",
+        "style": {
+          "animation": "tremble"
+        }
+      },
+      {
+        "text": "いたっ",
+        "style": {
+          "animation": "tremble"
+        }
+      },
+      {
+        "text": "ひっく……　ひっく……",
+        "style": {
+          "animation": "tremble"
+        }
+      }
+    ]
+  },
+  "special": {
+    "dates": [],
+    "periods": []
+  },
+  "greetingDates": [],
+  "greetingPeriods": [],
+  "areas": []
+}
