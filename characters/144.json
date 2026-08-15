@@ -1,0 +1,47 @@
+{
+  "id": 144,
+  "name": "衣通 夕",
+  "image": "144.webp",
+  "position": {
+    "x": 974,
+    "y": 1773,
+    "scale": 745.3869860663209
+  },
+  "areas": [
+    {
+      "key": "area1",
+      "name": "エリア1",
+      "x": 785,
+      "y": 417,
+      "width": 356,
+      "height": 403,
+      "priority": "normal"
+    },
+    {
+      "key": "area2",
+      "name": "エリア2",
+      "x": 864,
+      "y": 152,
+      "width": 234,
+      "height": 208,
+      "priority": "normal"
+    }
+  ],
+  "page": "https://sarsland.notion.site/32b4fddb0aaa80199ca4fbaafcea63bc",
+  "birthday": {
+    "month": 4,
+    "day": 8
+  },
+  "menu": {
+    "icon": {
+      "image": "144.webp",
+      "crop": {
+        "x": 287,
+        "y": 64,
+        "size": 485,
+        "sourceWidth": 1051,
+        "sourceHeight": 2400
+      }
+    }
+  }
+}
