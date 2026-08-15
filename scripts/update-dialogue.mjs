@@ -481,6 +481,29 @@ function addGroupedTalk(items, keyFields, talk) {
   item.talk.push(talk);
 }
 
+/*
+  シーン指定は OR で別々に配るのではなく、条件を足すほど絞り込む。
+  同じ種類のエリア指定（エリア1 + エリア2）だけは「どちらのエリアでも」の意味で扱う。
+
+  例:
+    エリア1 + 連打        -> area1.rapid のみ
+    エリア1 + 月日        -> area1.talk に入り、その日だけ有効
+    エリア1 + 連打 + 月日 -> area1.rapid に入り、その日だけ有効
+    連打 + 月日           -> 全体rapidに入り、その日だけ有効
+*/
+function attachTalkConditions(talk, { greeting = false, rapid = false, dateInfo = null } = {}) {
+  const when = {};
+  if (greeting) when.greeting = true;
+  if (rapid) when.rapid = true;
+  if (dateInfo?.type === 'date') when.date = dateInfo.date;
+  if (dateInfo?.type === 'period') {
+    when.start = dateInfo.start;
+    when.end = dateInfo.end;
+  }
+  if (Object.keys(when).length) talk.when = when;
+  return talk;
+}
+
 export function addRootTalkToDialogue(dialogue, root, compiledTalk, warnings = []) {
   const scenes = root.scenes || [];
   const normalized = scenes.map(value => String(value).trim()).filter(Boolean);
@@ -490,51 +513,70 @@ export function addRootTalkToDialogue(dialogue, root, compiledTalk, warnings = [
   const areas = areaNumbers(normalized);
   const dateInfo = parseMonthDay(root.dateRaw);
 
-  if (dateInfo?.type === 'invalid') warnings.push(`「${root.text}」の月日「${dateInfo.raw}」を解釈できません。通常扱いにします。`);
-
-  let added = false;
-
-  if (hasGreeting) {
-    if (dateInfo?.type === 'date') {
-      addGroupedTalk(dialogue.greetingDates, [['date', dateInfo.date]], compiledTalk);
-    } else if (dateInfo?.type === 'period') {
-      addGroupedTalk(dialogue.greetingPeriods, [['start', dateInfo.start], ['end', dateInfo.end]], compiledTalk);
-    } else {
-      dialogue.talk.greeting.push(compiledTalk);
-    }
-    added = true;
+  if (dateInfo?.type === 'invalid') {
+    warnings.push(`「${root.text}」の月日「${dateInfo.raw}」を解釈できません。月日条件なしとして扱います。`);
   }
-
-  if (areas.length) {
-    if (dateInfo && dateInfo.type !== 'invalid') warnings.push(`「${root.text}」はエリア指定と月日指定を併用しています。エリア側では月日を無視します。`);
-    for (const number of areas) {
-      const area = areaBucket(dialogue, number);
-      (hasRapid ? area.rapid : area.talk).push(compiledTalk);
-    }
-    added = true;
-  }
-
-  if (hasRapid && !areas.length) {
-    dialogue.talk.rapid.push(compiledTalk);
-    added = true;
-  }
+  const validDateInfo = dateInfo && dateInfo.type !== 'invalid' ? dateInfo : null;
 
   const onlyControlTags = normalized.filter(value => !/^選択肢\s*\d+$/.test(value));
   const implicitNormal = onlyControlTags.length === 0;
-  if (hasNormal || (!added && implicitNormal)) {
-    if (dateInfo?.type === 'date') {
-      addGroupedTalk(dialogue.special.dates, [['date', dateInfo.date]], compiledTalk);
-    } else if (dateInfo?.type === 'period') {
-      addGroupedTalk(dialogue.special.periods, [['start', dateInfo.start], ['end', dateInfo.end]], compiledTalk);
+
+  // エリア指定が最も具体的。連打が付けばそのエリアの rapid だけへ入れる。
+  if (areas.length) {
+    attachTalkConditions(compiledTalk, {
+      greeting: hasGreeting,
+      rapid: hasRapid,
+      dateInfo: validDateInfo,
+    });
+    for (const number of areas) {
+      const area = areaBucket(dialogue, number);
+      (hasRapid ? area.rapid : area.talk).push(structuredClone(compiledTalk));
+    }
+    return;
+  }
+
+  // エリア無しの連打。月日があれば talk.when でさらに限定する。
+  if (hasRapid) {
+    attachTalkConditions(compiledTalk, {
+      greeting: hasGreeting,
+      rapid: true,
+      dateInfo: validDateInfo,
+    });
+    dialogue.talk.rapid.push(compiledTalk);
+    return;
+  }
+
+  // あいさつはあいさつ枠だけ。月日は既存の greetingDates / greetingPeriods で限定する。
+  if (hasGreeting) {
+    if (validDateInfo?.type === 'date') {
+      addGroupedTalk(dialogue.greetingDates, [['date', validDateInfo.date]], compiledTalk);
+    } else if (validDateInfo?.type === 'period') {
+      addGroupedTalk(dialogue.greetingPeriods, [['start', validDateInfo.start], ['end', validDateInfo.end]], compiledTalk);
+    } else {
+      dialogue.talk.greeting.push(compiledTalk);
+    }
+    return;
+  }
+
+  // 通常 / シーン未指定。月日は既存の special で限定する。
+  if (hasNormal || implicitNormal) {
+    if (validDateInfo?.type === 'date') {
+      addGroupedTalk(dialogue.special.dates, [['date', validDateInfo.date]], compiledTalk);
+    } else if (validDateInfo?.type === 'period') {
+      addGroupedTalk(dialogue.special.periods, [['start', validDateInfo.start], ['end', validDateInfo.end]], compiledTalk);
     } else {
       dialogue.talk.normal.push(compiledTalk);
     }
-    added = true;
+    return;
   }
 
-  if (!added) {
-    // 未知のシーン名しか無い場合も台詞を捨てず、通常へ退避する。
-    warnings.push(`「${root.text}」のシーン [${normalized.join(', ')}] は配置先を判定できないため通常台詞に入れます。`);
+  // 未知のシーン名しか無い場合も台詞は捨てない。
+  warnings.push(`「${root.text}」のシーン [${normalized.join(', ')}] は配置先を判定できないため通常台詞に入れます。`);
+  if (validDateInfo?.type === 'date') {
+    addGroupedTalk(dialogue.special.dates, [['date', validDateInfo.date]], compiledTalk);
+  } else if (validDateInfo?.type === 'period') {
+    addGroupedTalk(dialogue.special.periods, [['start', validDateInfo.start], ['end', validDateInfo.end]], compiledTalk);
+  } else {
     dialogue.talk.normal.push(compiledTalk);
   }
 }
