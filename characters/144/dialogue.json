@@ -29,6 +29,14 @@
       },
       {
         "text": "いっしょにおよぐ？"
+      },
+      {
+        "text": "手、つなぐ？",
+        "next": [
+          {
+            "text": "うん、いいよ"
+          }
+        ]
       }
     ],
     "rapid": [
@@ -36,30 +44,48 @@
         "text": "や",
         "style": {
           "animation": "pulse"
+        },
+        "when": {
+          "rapid": true
         }
       },
       {
-        "text": "ふぐ、"
+        "text": "ふぐ、",
+        "when": {
+          "rapid": true
+        }
       },
       {
-        "text": "おぇ……"
+        "text": "おぇ……",
+        "when": {
+          "rapid": true
+        }
       },
       {
         "text": "うう……",
         "style": {
           "animation": "tremble"
+        },
+        "when": {
+          "rapid": true
         }
       },
       {
         "text": "いたっ",
         "style": {
           "animation": "pulse"
+        },
+        "when": {
+          "rapid": true
         }
       },
       {
         "text": "ひっく……　ひっく……",
         "style": {
           "animation": "tremble"
+        },
+        "when": {
+          "rapid": true
         }
       }
     ]
