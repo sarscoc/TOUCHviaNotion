@@ -255,6 +255,26 @@ function datePartsFromNotion(value) {
   return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
 }
 
+function formatAnniversaryDate(startDate, endDate) {
+  const pad = value => String(value).padStart(2, '0');
+  const full = date => `${date.year}/${pad(date.month)}/${pad(date.day)}`;
+  const monthDay = date => `${pad(date.month)}/${pad(date.day)}`;
+
+  if (!endDate || (
+    startDate.year === endDate.year &&
+    startDate.month === endDate.month &&
+    startDate.day === endDate.day
+  )) {
+    return full(startDate);
+  }
+
+  if (startDate.year === endDate.year) {
+    return `${full(startDate)} - ${monthDay(endDate)}`;
+  }
+
+  return `${full(startDate)} - ${full(endDate)}`;
+}
+
 function unique(values) {
   return [...new Set(values.map(v => String(v).trim()).filter(Boolean))];
 }
@@ -324,10 +344,11 @@ async function buildAnniversaryItems(dataSource, today, warnings) {
 
   for (const page of pages) {
     const dateProp = page.properties?.['ᴅᴀᴛᴇ'];
-    const dateValue = dateProp?.type === 'formula'
-      ? dateProp?.formula?.date?.start
-      : dateProp?.date?.start;
-    const date = datePartsFromNotion(dateValue);
+    const notionDate = dateProp?.type === 'formula'
+      ? dateProp?.formula?.date
+      : dateProp?.date;
+    const date = datePartsFromNotion(notionDate?.start);
+    const endDate = datePartsFromNotion(notionDate?.end);
     if (!date || date.month !== today.month || date.day !== today.day) continue;
 
     const title = pageTitle(page, titleName);
@@ -338,7 +359,8 @@ async function buildAnniversaryItems(dataSource, today, warnings) {
       tags.push(...await propertyTexts(page.properties?.[propName]));
     }
     const hashtagText = unique(tags).map(name => `#${name}`).join(' ');
-    const text = `${date.year} ${title}${hashtagText ? ` ${hashtagText}` : ''}`;
+    const dateText = formatAnniversaryDate(date, endDate);
+    const text = `${dateText} ${title}${hashtagText ? ` ${hashtagText}` : ''}`;
 
     out.push({
       text,
