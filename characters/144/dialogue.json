@@ -35,20 +35,14 @@
       {
         "text": "や",
         "style": {
-          "animation": "tremble"
+          "animation": "pulse"
         }
       },
       {
-        "text": "ふぐ、",
-        "style": {
-          "animation": "tremble"
-        }
+        "text": "ふぐ、"
       },
       {
-        "text": "おぇ……",
-        "style": {
-          "animation": "tremble"
-        }
+        "text": "おぇ……"
       },
       {
         "text": "うう……",
@@ -59,7 +53,7 @@
       {
         "text": "いたっ",
         "style": {
-          "animation": "tremble"
+          "animation": "pulse"
         }
       },
       {
