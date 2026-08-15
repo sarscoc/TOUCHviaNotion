@@ -45,11 +45,11 @@
     "icon": {
       "image": "144.webp",
       "crop": {
-        "x": 103,
-        "y": 39,
-        "size": 448,
-        "sourceWidth": 649,
-        "sourceHeight": 2088
+        "x": 79,
+        "y": 30,
+        "size": 343,
+        "sourceWidth": 497,
+        "sourceHeight": 1600
       }
     }
   }
