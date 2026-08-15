@@ -29,51 +29,13 @@
       },
       {
         "text": "いっしょにおよぐ？"
-      },
-      {
-        "text": "手、つなぐ？",
-        "next": [
-          {
-            "text": "うん、いいよ"
-          }
-        ]
       }
     ],
     "rapid": [
       {
-        "text": "や",
-        "style": {
-          "animation": "pulse"
-        },
-        "when": {
-          "rapid": true
-        }
-      },
-      {
-        "text": "ふぐ、",
-        "when": {
-          "rapid": true
-        }
-      },
-      {
-        "text": "おぇ……",
-        "when": {
-          "rapid": true
-        }
-      },
-      {
         "text": "うう……",
         "style": {
           "animation": "tremble"
-        },
-        "when": {
-          "rapid": true
-        }
-      },
-      {
-        "text": "いたっ",
-        "style": {
-          "animation": "pulse"
         },
         "when": {
           "rapid": true
@@ -96,5 +58,62 @@
   },
   "greetingDates": [],
   "greetingPeriods": [],
-  "areas": []
+  "areas": [
+    {
+      "key": "area1",
+      "talk": [],
+      "rapid": [
+        {
+          "text": "や",
+          "style": {
+            "animation": "pulse"
+          },
+          "when": {
+            "rapid": true
+          }
+        },
+        {
+          "text": "いたっ",
+          "style": {
+            "animation": "pulse"
+          },
+          "when": {
+            "rapid": true
+          }
+        }
+      ]
+    },
+    {
+      "key": "area2",
+      "talk": [],
+      "rapid": [
+        {
+          "text": "ふぐ、",
+          "when": {
+            "rapid": true
+          }
+        },
+        {
+          "text": "おぇ……",
+          "when": {
+            "rapid": true
+          }
+        }
+      ]
+    },
+    {
+      "key": "area3",
+      "talk": [
+        {
+          "text": "手、つなぐ？",
+          "next": [
+            {
+              "text": "うん、いいよ"
+            }
+          ]
+        }
+      ],
+      "rapid": []
+    }
+  ]
 }
