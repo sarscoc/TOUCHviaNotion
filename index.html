@@ -3740,17 +3740,13 @@ function applyFaceCrop(imgElement, char, face) {
     }
 
     /*
-      menu.face はエディターの
-      「このエリアでアイコンを作る」☑エリアから作られる。
+      旧JSONの menu.face でも、
+      エディターで決めた範囲をそのままゲーム側アイコンへ反映する。
 
-      ここで欲しいのはエリアの「中心」だけ。
-      エリア自体はアイコン指定用に大きく作ることもあるので、
-      face.width / face.height をズーム率には絶対に使わない。
-
-      1) face の中心をゲーム座標で取得
-      2) 立ち絵がゲーム画面上でどこに描かれているか復元
-      3) その中心が112x112の中央に来るよう画像を移動
-      4) 顔アイコン用のズームは立ち絵幅を基準に固定
+      - face.x / face.y / face.width / face.height をそのまま使う
+      - 中心だけ拾って再計算しない
+      - 選択範囲全体が 112x112 に入るよう、長辺基準で等倍縮小する
+      - 短辺側は中央寄せにして、エディターで見た位置関係を保つ
     */
     const apply = () => {
         const naturalW = Number(imgElement.naturalWidth || 0);
@@ -3769,38 +3765,26 @@ function applyFaceCrop(imgElement, char, face) {
         const displayLeft = footX - displayWidth / 2;
         const displayTop = footY - displayHeight;
 
+        const faceX = Number(face.x || 0);
+        const faceY = Number(face.y || 0);
         const faceW = Math.max(1, Number(face.width) || 1);
         const faceH = Math.max(1, Number(face.height) || 1);
 
-        // ☑したエリアの中心。その大きさはクロップ倍率に使わない。
-        const centerX = Number(face.x || 0) + faceW / 2;
-        const centerY = Number(face.y || 0) + faceH / 2;
-
-        /*
-          顔用の固定クロップ範囲。
-          立ち絵表示幅のおよそ28%を112pxに収める。
-          極端なscaleでも顔が大きすぎ/小さすぎにならないよう制限。
-        */
-        const cropWorldSize = Math.max(
-            220,
-            Math.min(360, displayWidth * 0.28)
-        );
+        const cropWorldSize = Math.max(faceW, faceH);
         const zoom = THUMB_SIZE / cropWorldSize;
 
         const imageWidth = displayWidth * zoom;
         const imageHeight = displayHeight * zoom;
+        const offsetX = (THUMB_SIZE - faceW * zoom) / 2;
+        const offsetY = (THUMB_SIZE - faceH * zoom) / 2;
 
         imgElement.style.position = "absolute";
         imgElement.style.objectFit = "fill";
         imgElement.style.maxWidth = "none";
         imgElement.style.width = imageWidth + "px";
         imgElement.style.height = imageHeight + "px";
-
-        // ☑エリア中心 = アイコン中心(56,56)
-        imgElement.style.left =
-            (THUMB_SIZE / 2 - (centerX - displayLeft) * zoom) + "px";
-        imgElement.style.top =
-            (THUMB_SIZE / 2 - (centerY - displayTop) * zoom) + "px";
+        imgElement.style.left = (offsetX - (faceX - displayLeft) * zoom) + "px";
+        imgElement.style.top = (offsetY - (faceY - displayTop) * zoom) + "px";
     };
 
     if (imgElement.complete && imgElement.naturalWidth > 0) {
