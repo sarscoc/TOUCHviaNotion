@@ -2198,14 +2198,38 @@ function parseCharacterJsonText(text) {
     return JSON.parse(value);
 }
 
-/* ===== Notion同期台詞：characters/<ID>/dialogue.json 専用 ===== */
+/* ===== 台詞データ =====
+   通常は characters/<ID>/<ID>.json に入っている talk / special / area talk を使う。
+   dialogue.json が存在する場合だけ、そちらを優先して上書きする。
+   これで従来の1ファイル構成でも、将来の分離構成でも動く。
+*/
 const EMPTY_DIALOGUE = Object.freeze({
     talk: Object.freeze({ greeting: Object.freeze([]), normal: Object.freeze([]), rapid: Object.freeze([]) }),
     special: Object.freeze({ dates: Object.freeze([]), periods: Object.freeze([]) }),
     greetingDates: Object.freeze([]),
     greetingPeriods: Object.freeze([]),
-    areas: Object.freeze([])
+    areas: Object.freeze([]),
+    textStyle: Object.freeze({})
 });
+
+function normalizeDialogueData(source) {
+    const json = source && typeof source === "object" && !Array.isArray(source) ? source : {};
+    return {
+        talk: {
+            greeting: Array.isArray(json.talk?.greeting) ? json.talk.greeting : [],
+            normal: Array.isArray(json.talk?.normal) ? json.talk.normal : [],
+            rapid: Array.isArray(json.talk?.rapid) ? json.talk.rapid : []
+        },
+        special: {
+            dates: Array.isArray(json.special?.dates) ? json.special.dates : [],
+            periods: Array.isArray(json.special?.periods) ? json.special.periods : []
+        },
+        greetingDates: Array.isArray(json.greetingDates) ? json.greetingDates : [],
+        greetingPeriods: Array.isArray(json.greetingPeriods) ? json.greetingPeriods : [],
+        areas: Array.isArray(json.areas) ? json.areas : [],
+        textStyle: json.textStyle && typeof json.textStyle === "object" ? json.textStyle : {}
+    };
+}
 
 function dialoguePathForCharacter(char) {
     if (!char) return "";
@@ -2215,15 +2239,20 @@ function dialoguePathForCharacter(char) {
 
 async function loadDialogueForCharacter(char) {
     if (!char) return EMPTY_DIALOGUE;
+
+    // まずキャラクターJSON自身の台詞を必ず使える状態にする。
+    const fallback = normalizeDialogueData(char);
+    char._dialogueData = fallback;
+
+    // dialogue.json は「あれば優先」。無ければキャラJSONのままで正常。
     const path = dialoguePathForCharacter(char);
-    if (!path) return EMPTY_DIALOGUE;
+    if (!path) return fallback;
 
     try {
         const response = await fetch(path, { cache: "no-store" });
         if (response.status === 404) {
-            console.info(`台詞データなし: ${path}`);
-            char._dialogueData = EMPTY_DIALOGUE;
-            return EMPTY_DIALOGUE;
+            console.info(`dialogue.json なし → キャラクターJSONの台詞を使用: ${path}`);
+            return fallback;
         }
         if (!response.ok) throw new Error(`${path} (${response.status})`);
 
@@ -2232,26 +2261,13 @@ async function loadDialogueForCharacter(char) {
             throw new Error("dialogue.json の最上位がオブジェクトではありません");
         }
 
-        const normalized = {
-            talk: {
-                greeting: Array.isArray(json.talk?.greeting) ? json.talk.greeting : [],
-                normal: Array.isArray(json.talk?.normal) ? json.talk.normal : [],
-                rapid: Array.isArray(json.talk?.rapid) ? json.talk.rapid : []
-            },
-            special: {
-                dates: Array.isArray(json.special?.dates) ? json.special.dates : [],
-                periods: Array.isArray(json.special?.periods) ? json.special.periods : []
-            },
-            greetingDates: Array.isArray(json.greetingDates) ? json.greetingDates : [],
-            greetingPeriods: Array.isArray(json.greetingPeriods) ? json.greetingPeriods : [],
-            areas: Array.isArray(json.areas) ? json.areas : []
-        };
+        const normalized = normalizeDialogueData(json);
         char._dialogueData = normalized;
         return normalized;
     } catch (error) {
-        console.error("dialogue.json 読み込み失敗:", error);
-        char._dialogueData = EMPTY_DIALOGUE;
-        return EMPTY_DIALOGUE;
+        console.warn("dialogue.json を使えないためキャラクターJSONへフォールバック:", error);
+        char._dialogueData = fallback;
+        return fallback;
     }
 }
 
