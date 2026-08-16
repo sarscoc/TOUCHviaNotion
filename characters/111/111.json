@@ -1,0 +1,171 @@
+{
+  "id": 111,
+  "name": "リサ",
+  "image": "111.webp",
+  "position": {
+    "x": 1148.8291968859753,
+    "y": 1805.9987289879377,
+    "scale": 1174.3759235537293
+  },
+  "areas": [
+    {
+      "key": "area1",
+      "name": "エリア1",
+      "x": 749,
+      "y": 56,
+      "width": 245,
+      "height": 226,
+      "talk": [
+        {
+          "text": "ちょっと！ヅラ……\nじゃなくて、髪が崩れるでしょ！",
+          "style": {
+            "color": "#ffffff",
+            "size": 16,
+            "font": "",
+            "animation": ""
+          }
+        }
+      ],
+      "rapid": [],
+      "priority": "normal"
+    },
+    {
+      "key": "area2",
+      "name": "エリア2",
+      "x": 1069,
+      "y": 9,
+      "width": 305,
+      "height": 178,
+      "talk": [
+        {
+          "text": "ん？なになに？",
+          "style": {
+            "color": "#ffffff",
+            "size": 16,
+            "font": "",
+            "animation": ""
+          }
+        }
+      ],
+      "rapid": [],
+      "priority": "normal"
+    },
+    {
+      "key": "area3",
+      "name": "エリア3",
+      "x": 561,
+      "y": 662,
+      "width": 753,
+      "height": 259,
+      "priority": "normal"
+    }
+  ],
+  "talk": {
+    "greeting": [
+      {
+        "text": "いらっしゃいませ～♡",
+        "style": {
+          "color": "#ffffff",
+          "size": 16,
+          "font": "",
+          "animation": ""
+        },
+        "next": [
+          {
+            "text": "なに？お客さんじゃないの？",
+            "style": {
+              "color": "#ffffff",
+              "size": 16,
+              "font": ""
+            }
+          }
+        ]
+      }
+    ],
+    "normal": [
+      {
+        "text": "お腹すいたぁ……おやつまだ～？"
+      },
+      {
+        "text": "あ～疲れたぁ"
+      },
+      {
+        "text": "オーナぁ～♡",
+        "style": {
+          "color": "#ffffff",
+          "size": 16,
+          "font": "",
+          "animation": ""
+        },
+        "next": [
+          {
+            "text": "あれ、いねえな……",
+            "style": {
+              "color": "#ffffff",
+              "size": 16,
+              "font": ""
+            }
+          }
+        ]
+      }
+    ],
+    "rapid": [
+      {
+        "text": "あたぁ♡",
+        "style": {
+          "color": "#ffffff",
+          "size": 16,
+          "font": "",
+          "animation": ""
+        }
+      },
+      {
+        "text": "いたぁい♡",
+        "style": {
+          "color": "#ffffff",
+          "size": 16,
+          "font": "",
+          "animation": ""
+        }
+      }
+    ]
+  },
+  "special": {
+    "dates": [],
+    "periods": []
+  },
+  "greetingDates": [],
+  "greetingPeriods": [],
+  "textStyle": {
+    "color": "#ffffff",
+    "size": 16,
+    "font": "gothic"
+  },
+  "variants": [
+    {
+      "name": "青ざめ",
+      "image": "111_青ざめ.webp",
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1
+    }
+  ],
+  "page": "https://sarsland.notion.site/63b4f54bc5844ec184743515c1c35473",
+  "birthday": {
+    "month": 9,
+    "day": 30
+  },
+  "_editorNormalLocked": true,
+  "menu": {
+    "icon": {
+      "image": "111.webp",
+      "crop": {
+        "x": 188,
+        "y": 71,
+        "size": 416,
+        "sourceWidth": 1419,
+        "sourceHeight": 2201
+      }
+    }
+  }
+}
