@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-29T13:22:59.834Z",
+  "generatedAt": "2026-08-29T17:18:59.127Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-08-29",
+  "date": "2026-08-30",
   "items": [
     {
       "text": "SARS LAND",
@@ -29,8 +29,13 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日が記念日の卓報告はありません",
-      "url": "",
+      "text": "2025/08/30 愛罠蜂 #sars #おこめ #ひかげ #鼈甲 #楠木 硴",
+      "url": "https://sarsland.notion.site/25f4fddb0aaa80c49821e1577b9571fe",
+      "separatorBefore": "✧"
+    },
+    {
+      "text": "2019/08/30 - 09/16 星へ至る棺 #kuliyon #sars #宴艶 包",
+      "url": "https://sarsland.notion.site/6b01eab2929e46bf9a726754b4a08ea6",
       "separatorBefore": "✧"
     }
   ],
