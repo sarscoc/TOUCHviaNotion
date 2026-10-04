@@ -1,5 +1,13 @@
 [
   {
+    "image": "nomal.jpg",
+    "name": "通常",
+    "season": {
+      "start": "01-01",
+      "end": "12-31"
+    }
+  },
+  {
     "image": "spring.jpg",
     "name": "春",
     "season": {
