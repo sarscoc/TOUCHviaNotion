@@ -1,42 +1,22 @@
 [
   {
     "image": "nomal.jpg",
-    "name": "通常",
-    "season": {
-      "start": "01-01",
-      "end": "12-31"
-    }
+    "name": "通常"
   },
   {
     "image": "room1.jpg",
-    "name": "室内",
-    "season": {
-      "start": "03-01",
-      "end": "05-31"
-    }
+    "name": "室内"
   },
   {
     "image": "sample.jpg",
-    "name": "夏",
-    "season": {
-      "start": "06-01",
-      "end": "08-31"
-    }
+    "name": "夏"
   },
   {
     "name": "秋",
-    "season": {
-      "start": "09-01",
-      "end": "11-30"
-    },
     "image": "summer.jpg"
   },
   {
     "name": "冬",
-    "season": {
-      "start": "12-01",
-      "end": "02-28"
-    },
     "image": "summeranime.jpg"
   }
 ]
