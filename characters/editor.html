@@ -5783,8 +5783,11 @@ function initCharacterGithub() {
   };
   $('dialogueFrame').addEventListener('load',hideFrameSave);hideFrameSave();
   window.addEventListener('beforeunload',e=>{if(characterGithub.busy||(characterGithub.cleanSignature&&githubEditorSignature()!==characterGithub.cleanSignature)){e.preventDefault();e.returnValue='';}});
-  characterGithub.cleanSignature=githubEditorSignature();
-  githubRefreshChoices().then(()=>{if(!characterGithub.busy&&!characterGithub.loaded)githubStatus('キャラを開いてください');}).catch(err=>{panel.hidden=false;githubStatus(err.message,true);});
+  githubBusy(true);githubStatus('一覧読込中…');
+  Promise.all([githubRefreshChoices(),githubWaitForDialogue().then(githubFlushDialogue)]).then(()=>{
+    characterGithub.cleanSignature=githubEditorSignature();
+    githubStatus('キャラを開いてください');
+  }).catch(err=>{panel.hidden=false;githubStatus(err.message,true);}).finally(()=>githubBusy(false));
 }
 initCharacterGithub();
 
