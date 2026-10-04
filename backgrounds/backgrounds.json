@@ -24,12 +24,12 @@
     }
   },
   {
-    "image": "autumn.jpg",
     "name": "秋",
     "season": {
       "start": "09-01",
       "end": "11-30"
-    }
+    },
+    "image": "summer.jpg"
   },
   {
     "image": "winter.jpg",
