@@ -2,96 +2,77 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Background Uploader</title>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:#f4f4f1;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",sans-serif}
-body{display:flex;align-items:center;justify-content:center;padding:24px}
-.wrap{width:min(760px,100%);background:#fff;border:1px solid #deded8;border-radius:22px;padding:28px;box-shadow:0 18px 55px rgba(0,0,0,.08)}
-h1{margin:0 0 8px;font-size:28px}.sub{margin:0 0 24px;color:#777;font-size:14px;line-height:1.6}.grid{display:grid;gap:18px}
-label{display:grid;gap:8px;font-size:14px;font-weight:700}
-select,input[type="password"],input[type="text"]{width:100%;height:48px;border:1px solid #d8d8d2;border-radius:12px;background:#fff;padding:0 14px;font-size:16px;color:#171717;outline:none}
-select:focus,input:focus{border-color:#111}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.preview-box{display:grid;gap:8px}.preview-label{font-size:14px;font-weight:700}.current{border:1px solid #deded8;border-radius:16px;min-height:180px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafaf8}.current img{display:block;width:100%;height:220px;object-fit:cover}.current-empty{color:#888;font-size:13px;padding:20px;text-align:center}
-.drop{position:relative;border:2px dashed #cfcfc8;border-radius:16px;min-height:180px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafaf8;cursor:pointer;transition:.15s}
-.drop:hover{border-color:#999;background:#f7f7f4}.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}.drop .hint{text-align:center;color:#777;pointer-events:none;line-height:1.6;padding:20px}.drop img{display:none;width:100%;height:220px;object-fit:cover;background:#eee}
-.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button{border:0;border-radius:999px;height:48px;padding:0 22px;font-size:15px;font-weight:700;cursor:pointer}#upload{background:#111;color:#fff;min-width:180px}#upload:disabled{opacity:.35;cursor:not-allowed}#clear{background:#ecece7;color:#222}
-.remember{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;font-weight:500}.status{min-height:24px;margin-top:2px;font-size:14px;line-height:1.6}.status.ok{color:#176b2c}.status.err{color:#b11f24}.status.work{color:#555}.note{margin-top:18px;padding-top:18px;border-top:1px solid #ecece7;color:#777;font-size:12px;line-height:1.7}.file-name{font-size:13px;color:#555;font-weight:500;word-break:break-all}
-@media(max-width:560px){body{padding:12px}.wrap{padding:20px;border-radius:18px}.row,.preview-grid{grid-template-columns:1fr}.actions{align-items:stretch}.actions button{width:100%}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#f4f4f1;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",sans-serif}body{display:flex;align-items:center;justify-content:center;padding:24px}.wrap{width:min(760px,100%);background:#fff;border:1px solid #deded8;border-radius:22px;padding:28px;box-shadow:0 18px 55px rgba(0,0,0,.08)}h1{margin:0 0 8px;font-size:28px}.sub{margin:0 0 24px;color:#777;font-size:14px;line-height:1.6}.grid{display:grid;gap:18px}.row,.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label,.preview-box{display:grid;gap:8px;font-size:14px;font-weight:700}select,input[type="password"],input[type="text"]{width:100%;height:48px;border:1px solid #d8d8d2;border-radius:12px;background:#fff;padding:0 14px;font-size:16px;color:#171717;outline:none}select:focus,input:focus{border-color:#111}.file-input{display:flex;align-items:center}.file-input input{border-radius:12px 0 0 12px}.suffix{height:48px;display:flex;align-items:center;padding:0 14px;border:1px solid #d8d8d2;border-left:0;border-radius:0 12px 12px 0;background:#f1f1ed;color:#666;font-size:15px;font-weight:600}.current,.drop{min-height:180px;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafaf8}.current{border:1px solid #deded8}.current img,.drop img{display:none;width:100%;height:220px;object-fit:cover}.current-empty,.hint{color:#888;font-size:13px;padding:20px;text-align:center;line-height:1.6}.drop{position:relative;border:2px dashed #cfcfc8;cursor:pointer;transition:.15s}.drop:hover{border-color:#999;background:#f7f7f4}.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button{border:0;border-radius:999px;height:48px;padding:0 22px;font-size:15px;font-weight:700;cursor:pointer}#upload{background:#111;color:#fff;min-width:180px}#upload:disabled{opacity:.35;cursor:not-allowed}#clear{background:#ecece7;color:#222}.remember{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;font-weight:500}.status{min-height:24px;font-size:14px;line-height:1.6}.status.ok{color:#176b2c}.status.err{color:#b11f24}.status.work{color:#555}.note{margin-top:18px;padding-top:18px;border-top:1px solid #ecece7;color:#777;font-size:12px;line-height:1.7}.file-name{font-size:13px;color:#555;font-weight:500;word-break:break-all}@media(max-width:560px){body{padding:12px}.wrap{padding:20px;border-radius:18px}.row,.preview-grid{grid-template-columns:1fr}.actions{align-items:stretch}.actions button{width:100%}}
 </style>
 </head>
 <body>
 <main class="wrap">
-  <h1>Background Uploader</h1>
-  <p class="sub">背景の画像と表示名をここから更新できます。左に現在の画像、右に新しく選んだ画像が表示されます。</p>
-  <div class="grid">
-    <div class="row">
-      <label>背景<select id="slot"><option value="nomal">通常</option><option value="spring">春</option><option value="summer">夏</option><option value="autumn">秋</option><option value="winter">冬</option></select></label>
-      <label>表示名<input id="displayName" type="text" maxlength="40" placeholder="例：夏"></label>
-    </div>
-
-    <div class="preview-grid">
-      <div class="preview-box">
-        <div class="preview-label">現在の画像</div>
-        <div class="current" id="currentBox">
-          <img id="currentPreview" alt="現在の背景">
-          <div class="current-empty" id="currentEmpty">読み込み中…</div>
-        </div>
-      </div>
-      <div class="preview-box">
-        <div class="preview-label">新しい画像</div>
-        <div class="drop" id="drop">
-          <input id="file" type="file" accept="image/*">
-          <div class="hint" id="hint">ここをクリックして画像を選択<br>または画像をドラッグ＆ドロップ</div>
-          <img id="preview" alt="新しい背景">
-        </div>
-        <div class="file-name" id="fileName"></div>
-      </div>
-    </div>
-
-    <label>GitHub Token
-      <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
-      <span class="remember"><input id="remember" type="checkbox" checked> このブラウザに保存する</span>
+<h1>Background Uploader</h1>
+<p class="sub">背景画像の差し替えと、画像ファイル名の変更ができます。日本語の背景名はそのままです。</p>
+<div class="grid">
+  <div class="row">
+    <label>背景<select id="slot"></select></label>
+    <label>ファイル名
+      <div class="file-input"><input id="fileBase" type="text" maxlength="60" placeholder="summer"><span class="suffix">.jpg</span></div>
     </label>
-
-    <div class="actions">
-      <button id="upload" type="button" disabled>背景を更新</button>
-      <button id="clear" type="button">新しい画像を外す</button>
-    </div>
-    <div id="status" class="status"></div>
   </div>
 
-  <div class="note">
-    Token はGitHub APIへの更新にだけ使います。ページのソースには埋め込みません。保存をONにした場合のみ、このブラウザの localStorage に保存されます。<br>
-    Fine-grained token はこのリポジトリだけを対象にし、Repository permissions の <b>Contents: Read and write</b> を許可してください。
+  <div class="preview-grid">
+    <div class="preview-box"><div>現在の画像</div><div class="current"><img id="currentPreview" alt="現在の背景"><div class="current-empty" id="currentEmpty">読み込み中…</div></div></div>
+    <div class="preview-box"><div>新しい画像</div><div class="drop" id="drop"><input id="file" type="file" accept="image/*"><div class="hint" id="hint">ここをクリックして画像を選択<br>またはドラッグ＆ドロップ</div><img id="preview" alt="新しい背景"></div><div class="file-name" id="fileName"></div></div>
   </div>
+
+  <label>GitHub Token
+    <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+    <span class="remember"><input id="remember" type="checkbox" checked> このブラウザに保存する</span>
+  </label>
+
+  <div class="actions"><button id="upload" type="button" disabled>背景を更新</button><button id="clear" type="button">新しい画像を外す</button></div>
+  <div id="status" class="status"></div>
+</div>
+<div class="note">ファイル名は半角英数字・<b>-</b>・<b>_</b> が使えます。拡張子 <b>.jpg</b> は自動で付きます。ファイル名を変更すると、実際の画像ファイルと backgrounds.json の参照も一緒に変更します。</div>
 </main>
 <script>
 const OWNER="sarscoc",REPO="TOUCHviaNotion",BRANCH="main";
 const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents/backgrounds`;
 const TOKEN_KEY="touchviaNotion.backgroundUploader.token";
-const FILES={nomal:"nomal.jpg",spring:"spring.jpg",summer:"summer.jpg",autumn:"autumn.jpg",winter:"winter.jpg"};
-const slot=document.getElementById("slot"),displayName=document.getElementById("displayName"),token=document.getElementById("token"),remember=document.getElementById("remember"),file=document.getElementById("file"),drop=document.getElementById("drop"),hint=document.getElementById("hint"),preview=document.getElementById("preview"),fileName=document.getElementById("fileName"),upload=document.getElementById("upload"),clear=document.getElementById("clear"),status=document.getElementById("status"),currentPreview=document.getElementById("currentPreview"),currentEmpty=document.getElementById("currentEmpty");
+const slot=document.getElementById("slot"),fileBase=document.getElementById("fileBase"),token=document.getElementById("token"),remember=document.getElementById("remember"),file=document.getElementById("file"),drop=document.getElementById("drop"),hint=document.getElementById("hint"),preview=document.getElementById("preview"),fileName=document.getElementById("fileName"),upload=document.getElementById("upload"),clear=document.getElementById("clear"),status=document.getElementById("status"),currentPreview=document.getElementById("currentPreview"),currentEmpty=document.getElementById("currentEmpty");
 let selectedFile=null,previewUrl="",backgroundData=[];
 const saved=localStorage.getItem(TOKEN_KEY);if(saved)token.value=saved;
 function setStatus(text,type=""){status.textContent=text;status.className=`status ${type}`}
-function syncButton(){upload.disabled=!(token.value.trim()&&displayName.value.trim())}
+function currentItem(){return backgroundData[Number(slot.value)]||null}
+function baseName(name){return String(name||"").replace(/\.jpg$/i,"")}
+function validBase(){return /^[A-Za-z0-9_-]+$/.test(fileBase.value.trim())}
+function syncButton(){upload.disabled=!(token.value.trim()&&validBase()&&currentItem())}
 function clearPreview(){selectedFile=null;file.value="";fileName.textContent="";if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl="";preview.removeAttribute("src");preview.style.display="none";hint.style.display="block"}
 function useFile(nextFile){if(!nextFile||!nextFile.type.startsWith("image/")){setStatus("画像ファイルを選んでください。","err");return}clearPreview();selectedFile=nextFile;previewUrl=URL.createObjectURL(nextFile);preview.src=previewUrl;preview.style.display="block";hint.style.display="none";fileName.textContent=nextFile.name;setStatus("")}
-function refreshCurrentPreview(){const target=FILES[slot.value];currentEmpty.style.display="block";currentEmpty.textContent="読み込み中…";currentPreview.style.display="none";currentPreview.onload=()=>{currentEmpty.style.display="none";currentPreview.style.display="block"};currentPreview.onerror=()=>{currentPreview.style.display="none";currentEmpty.style.display="block";currentEmpty.textContent="現在の画像を読み込めませんでした。"};currentPreview.src=`${target}?v=${Date.now()}`}
-file.addEventListener("change",()=>useFile(file.files?.[0]));token.addEventListener("input",syncButton);displayName.addEventListener("input",syncButton);clear.addEventListener("click",()=>{clearPreview();setStatus("")});
+function refreshCurrentPreview(){const item=currentItem();if(!item)return;currentEmpty.style.display="block";currentEmpty.textContent="読み込み中…";currentPreview.style.display="none";currentPreview.onload=()=>{currentEmpty.style.display="none";currentPreview.style.display="block"};currentPreview.onerror=()=>{currentPreview.style.display="none";currentEmpty.style.display="block";currentEmpty.textContent="現在の画像を読み込めませんでした。"};currentPreview.src=`${encodeURIComponent(item.image)}?v=${Date.now()}`}
+function refreshSlot(){const item=currentItem();if(!item)return;fileBase.value=baseName(item.image);refreshCurrentPreview();clearPreview();setStatus("");syncButton()}
+file.addEventListener("change",()=>useFile(file.files?.[0]));token.addEventListener("input",syncButton);fileBase.addEventListener("input",()=>{if(fileBase.value&&!validBase())setStatus("ファイル名は半角英数字・-・_だけ使えます。","err");else setStatus("");syncButton()});slot.addEventListener("change",refreshSlot);clear.addEventListener("click",()=>{clearPreview();setStatus("")});
 ["dragenter","dragover"].forEach(type=>drop.addEventListener(type,e=>{e.preventDefault();drop.style.borderColor="#111"}));["dragleave","drop"].forEach(type=>drop.addEventListener(type,e=>{e.preventDefault();drop.style.borderColor=""}));drop.addEventListener("drop",e=>useFile(e.dataTransfer?.files?.[0]));
-function fileToJpegBase64(inputFile,quality=.92){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(inputFile);img.onload=()=>{try{const canvas=document.createElement("canvas");canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);const dataUrl=canvas.toDataURL("image/jpeg",quality);URL.revokeObjectURL(url);resolve(dataUrl.split(",")[1])}catch(error){URL.revokeObjectURL(url);reject(error)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("画像を読み込めませんでした。"))};img.src=url})}
-async function githubRequest(url,options={}){const headers={Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28",Authorization:`Bearer ${token.value.trim()}`,...(options.headers||{})};const response=await fetch(url,{...options,headers});if(!response.ok){let message=`${response.status} ${response.statusText}`;try{const body=await response.json();if(body?.message)message=body.message}catch(_){}throw new Error(message)}if(response.status===204)return null;return response.json()}
-async function loadBackgroundData(){const response=await fetch(`backgrounds.json?v=${Date.now()}`,{cache:"no-store"});if(!response.ok)throw new Error("backgrounds.json を読み込めませんでした。");backgroundData=await response.json();refreshSlot()}
-function refreshName(){const target=FILES[slot.value];const item=backgroundData.find(bg=>bg.image===target);displayName.value=item?.name||slot.options[slot.selectedIndex]?.text||"";syncButton()}
-function refreshSlot(){refreshName();refreshCurrentPreview();clearPreview()}
-slot.addEventListener("change",refreshSlot);
-async function updateImage(target){const content=await fileToJpegBase64(selectedFile);let sha=null;try{const current=await githubRequest(`${API}/${encodeURIComponent(target)}?ref=${encodeURIComponent(BRANCH)}`);sha=current?.sha||null}catch(error){if(!String(error.message).includes("404"))throw error}const body={message:`Update background ${target}`,content,branch:BRANCH};if(sha)body.sha=sha;await githubRequest(`${API}/${encodeURIComponent(target)}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}
-async function updateName(target,newName){const jsonUrl=`${API}/backgrounds.json?ref=${encodeURIComponent(BRANCH)}`;const current=await githubRequest(jsonUrl);const raw=decodeURIComponent(escape(atob(current.content.replace(/\n/g,""))));const list=JSON.parse(raw);const item=list.find(bg=>bg.image===target);if(!item)throw new Error(`${target} の設定が backgrounds.json にありません。`);item.name=newName;const text=JSON.stringify(list,null,2)+"\n";const content=btoa(unescape(encodeURIComponent(text)));await githubRequest(`${API}/backgrounds.json`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:`Rename background ${target} to ${newName}`,content,sha:current.sha,branch:BRANCH})});backgroundData=list}
-upload.addEventListener("click",async()=>{const newName=displayName.value.trim();if(!token.value.trim()||!newName)return;const target=FILES[slot.value];upload.disabled=true;const hadImage=Boolean(selectedFile);try{if(remember.checked)localStorage.setItem(TOKEN_KEY,token.value.trim());else localStorage.removeItem(TOKEN_KEY);if(hadImage){setStatus(`${target} の画像を更新しています…`,"work");await updateImage(target)}setStatus(`表示名を「${newName}」に更新しています…`,"work");await updateName(target,newName);setStatus(`✓ ${newName} を更新しました。${hadImage?" 画像も更新済みです。":""}`,"ok");if(hadImage){clearPreview();setTimeout(refreshCurrentPreview,1200)}}catch(error){console.error(error);setStatus(`更新できませんでした：${error.message}`,"err")}finally{syncButton()}});
-loadBackgroundData().catch(error=>{console.error(error);displayName.value=slot.options[slot.selectedIndex].text;refreshCurrentPreview();setStatus(error.message,"err");syncButton()});syncButton();
+function fileToJpegBase64(inputFile,quality=.92){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(inputFile);img.onload=()=>{try{const canvas=document.createElement("canvas");canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);const out=canvas.toDataURL("image/jpeg",quality).split(",")[1];URL.revokeObjectURL(url);resolve(out)}catch(e){URL.revokeObjectURL(url);reject(e)}};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("画像を読み込めませんでした。"))};img.src=url})}
+async function githubRequest(url,options={}){const headers={Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28",Authorization:`Bearer ${token.value.trim()}`,...(options.headers||{})};const response=await fetch(url,{...options,headers});if(!response.ok){let message=`${response.status} ${response.statusText}`;try{const body=await response.json();if(body?.message)message=body.message}catch(_){}const error=new Error(message);error.status=response.status;throw error}if(response.status===204)return null;return response.json()}
+async function getRepoFile(name){return githubRequest(`${API}/${encodeURIComponent(name)}?ref=${encodeURIComponent(BRANCH)}`)}
+async function putRepoFile(name,content,sha,message){const body={message,content,branch:BRANCH};if(sha)body.sha=sha;return githubRequest(`${API}/${encodeURIComponent(name)}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}
+async function deleteRepoFile(name,sha){return githubRequest(`${API}/${encodeURIComponent(name)}`,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:`Remove old background ${name}`,sha,branch:BRANCH})})}
+async function loadBackgroundData(){const response=await fetch(`backgrounds.json?v=${Date.now()}`,{cache:"no-store"});if(!response.ok)throw new Error("backgrounds.json を読み込めませんでした。");backgroundData=await response.json();slot.innerHTML="";backgroundData.forEach((bg,i)=>{const option=document.createElement("option");option.value=String(i);option.textContent=bg.name||bg.image||`背景${i+1}`;slot.appendChild(option)});refreshSlot()}
+async function updateBackground(){const index=Number(slot.value),item=currentItem();if(!item)return;const oldName=String(item.image||"");const newName=`${fileBase.value.trim()}.jpg`;const renamed=oldName!==newName;const hadImage=Boolean(selectedFile);if(!hadImage&&!renamed){setStatus("画像もファイル名も変更されていません。","");return}
+if(remember.checked)localStorage.setItem(TOKEN_KEY,token.value.trim());else localStorage.removeItem(TOKEN_KEY);
+setStatus("GitHubの現在データを確認しています…","work");
+const jsonCurrent=await getRepoFile("backgrounds.json");const jsonRaw=decodeURIComponent(escape(atob(jsonCurrent.content.replace(/\n/g,""))));const list=JSON.parse(jsonRaw);const liveItem=list[index];if(!liveItem)throw new Error("背景設定が見つかりません。");const liveOldName=String(liveItem.image||oldName);
+let oldFile=null;try{oldFile=await getRepoFile(liveOldName)}catch(e){if(e.status!==404)throw e}
+let content;if(hadImage){setStatus("新しい画像を変換しています…","work");content=await fileToJpegBase64(selectedFile)}else{if(!oldFile?.content)throw new Error("現在の画像を取得できませんでした。");content=oldFile.content.replace(/\n/g,"")}
+let dest=null;try{dest=await getRepoFile(newName)}catch(e){if(e.status!==404)throw e}
+if(renamed&&dest)throw new Error(`${newName} はすでに存在します。別のファイル名にしてください。`);
+setStatus(`${newName} を保存しています…`,`work`);await putRepoFile(newName,content,renamed?null:(dest?.sha||oldFile?.sha||null),renamed?`Rename background ${liveOldName} to ${newName}`:`Update background ${newName}`);
+liveItem.image=newName;const jsonText=JSON.stringify(list,null,2)+"\n";const jsonContent=btoa(unescape(encodeURIComponent(jsonText)));setStatus("backgrounds.json を更新しています…","work");await putRepoFile("backgrounds.json",jsonContent,jsonCurrent.sha,`Update background reference to ${newName}`);
+if(renamed&&oldFile?.sha){setStatus(`古い ${liveOldName} を片付けています…`,`work`);await deleteRepoFile(liveOldName,oldFile.sha)}
+backgroundData=list;clearPreview();refreshCurrentPreview();setStatus(`✓ ${newName} に更新しました。`,`ok`)}
+upload.addEventListener("click",async()=>{if(upload.disabled)return;upload.disabled=true;try{await updateBackground()}catch(error){console.error(error);setStatus(`更新できませんでした：${error.message}`,"err")}finally{syncButton()}});
+loadBackgroundData().catch(error=>{console.error(error);setStatus(error.message,"err")});syncButton();
 </script>
 </body>
 </html>
