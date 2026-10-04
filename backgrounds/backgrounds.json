@@ -32,11 +32,11 @@
     "image": "summer.jpg"
   },
   {
-    "image": "winter.jpg",
     "name": "冬",
     "season": {
       "start": "12-01",
       "end": "02-28"
-    }
+    },
+    "image": "summeranime.jpg"
   }
 ]
