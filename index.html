@@ -3717,8 +3717,8 @@ function setBackground(bg) {
 }
 
 function setupBackground() {
-    const seasonal = backgrounds.find(bg => bg.season && isInPeriod(bg.season.start, bg.season.end));
-    if (seasonal) setBackground(seasonal);
+    const initial = backgrounds.find(bg => bg.image === "nomal.jpg") || backgrounds[0];
+    if (initial) setBackground(initial);
 }
 
 /* 背景短冊リスト生成 */
