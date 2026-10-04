@@ -5,122 +5,66 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Background Uploader</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#f4f4f1;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",sans-serif}body{display:flex;align-items:center;justify-content:center;padding:24px}.wrap{width:min(780px,100%);background:#fff;border:1px solid #deded8;border-radius:22px;padding:28px;box-shadow:0 18px 55px rgba(0,0,0,.08)}h1{margin:0 0 8px;font-size:28px}.sub{margin:0 0 24px;color:#777;font-size:14px;line-height:1.6}.grid{display:grid;gap:18px}.row,.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label,.preview-box{display:grid;gap:8px;font-size:14px;font-weight:700}select,input[type="password"],input[type="text"]{width:100%;height:48px;border:1px solid #d8d8d2;border-radius:12px;background:#fff;padding:0 14px;font-size:16px;color:#171717;outline:none}select:focus,input:focus{border-color:#111}.current,.drop{min-height:180px;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafaf8}.current{border:1px solid #deded8}.current img,.current video,.drop img,.drop video{display:none;width:100%;height:220px;object-fit:cover;background:#eee}.current-empty,.hint{color:#888;font-size:13px;padding:20px;text-align:center;line-height:1.6}.drop{position:relative;border:2px dashed #cfcfc8;cursor:pointer}.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button{border:0;border-radius:999px;height:48px;padding:0 22px;font-size:15px;font-weight:700;cursor:pointer}#save{background:#111;color:#fff;min-width:180px}#save:disabled{opacity:.35;cursor:not-allowed}#clear{background:#ecece7;color:#222}.remember{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;font-weight:500}.status{min-height:24px;font-size:14px;line-height:1.6}.status.ok{color:#176b2c}.status.err{color:#b11f24}.status.work{color:#555}.note{margin-top:18px;padding-top:18px;border-top:1px solid #ecece7;color:#777;font-size:12px;line-height:1.7}.file-name{font-size:13px;color:#555;font-weight:500;word-break:break-all}@media(max-width:560px){body{padding:12px}.wrap{padding:20px;border-radius:18px}.row,.preview-grid{grid-template-columns:1fr}.actions button{width:100%}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#f4f4f1;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",sans-serif}body{display:flex;align-items:center;justify-content:center;padding:24px}.wrap{width:min(780px,100%);background:#fff;border:1px solid #deded8;border-radius:22px;padding:28px;box-shadow:0 18px 55px rgba(0,0,0,.08)}h1{margin:0 0 8px;font-size:28px}.sub{margin:0 0 24px;color:#777;font-size:14px;line-height:1.6}.grid{display:grid;gap:18px}.row,.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label,.preview-box{display:grid;gap:8px;font-size:14px;font-weight:700}select,input[type=password],input[type=text]{width:100%;height:48px;border:1px solid #d8d8d2;border-radius:12px;background:#fff;padding:0 14px;font-size:16px;color:#171717;outline:none}.current,.drop{min-height:180px;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafaf8}.current{border:1px solid #deded8}.current img,.current video,.drop img,.drop video{display:none;width:100%;height:220px;object-fit:cover;background:#eee}.current-empty,.hint{color:#888;font-size:13px;padding:20px;text-align:center;line-height:1.6}.drop{position:relative;border:2px dashed #cfcfc8;cursor:pointer}.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button{border:0;border-radius:999px;height:48px;padding:0 22px;font-size:15px;font-weight:700;cursor:pointer}#save{background:#111;color:#fff;min-width:180px}#save:disabled{opacity:.35;cursor:not-allowed}#clear{background:#ecece7;color:#222}.remember{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;font-weight:500}.status{min-height:24px;font-size:14px;line-height:1.6}.status.ok{color:#176b2c}.status.err{color:#b11f24}.status.work{color:#555}.note{margin-top:18px;padding-top:18px;border-top:1px solid #ecece7;color:#777;font-size:12px;line-height:1.7}.file-name{font-size:13px;color:#555;font-weight:500;word-break:break-all}@media(max-width:560px){body{padding:12px}.wrap{padding:20px;border-radius:18px}.row,.preview-grid{grid-template-columns:1fr}.actions button{width:100%}}
 </style>
 </head>
 <body>
 <main class="wrap">
 <h1>Background Uploader</h1>
-<p class="sub">背景ファイルと backgrounds.json の参照を同時に管理します。JPEG / PNG / WebP / APNG / MP4 対応です。</p>
+<p class="sub">GitHub上の背景ファイル名と backgrounds.json の参照を同時に変更します。JPEG / PNG / WebP / APNG / MP4 対応です。</p>
 <div class="grid">
   <div class="row">
     <label>背景<select id="slot"></select></label>
     <label>ファイル名<input id="filename" type="text" maxlength="100" placeholder="background.apng"></label>
   </div>
-
   <div class="preview-grid">
-    <div class="preview-box">
-      <div id="currentLabel">現在のファイル</div>
-      <div class="current"><img id="currentImage" alt=""><video id="currentVideo" autoplay muted loop playsinline></video><div class="current-empty" id="currentEmpty">読み込み中…</div></div>
-    </div>
-    <div class="preview-box">
-      <div>新しいファイル（任意）</div>
-      <div class="drop" id="drop"><input id="file" type="file" accept="image/jpeg,image/png,image/webp,.apng,video/mp4"><div class="hint" id="hint">差し替える場合だけ選択<br>JPEG / PNG / WebP / APNG / MP4</div><img id="previewImage" alt=""><video id="previewVideo" autoplay muted loop playsinline></video></div>
-      <div class="file-name" id="selectedName"></div>
-    </div>
+    <div class="preview-box"><div id="currentLabel">現在のファイル</div><div class="current"><img id="currentImage" alt=""><video id="currentVideo" autoplay muted loop playsinline></video><div class="current-empty" id="currentEmpty">読み込み中…</div></div></div>
+    <div class="preview-box"><div>新しいファイル（差し替える場合のみ）</div><div class="drop"><input id="file" type="file" accept="image/jpeg,image/png,image/webp,.apng,video/mp4"><div class="hint" id="hint">ここをクリックして選択<br>JPEG / PNG / WebP / APNG / MP4</div><img id="previewImage" alt=""><video id="previewVideo" autoplay muted loop playsinline></video></div><div class="file-name" id="selectedName"></div></div>
   </div>
-
-  <label>GitHub Token
-    <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
-    <span class="remember"><input id="remember" type="checkbox" checked> このブラウザに保存する</span>
-  </label>
-
+  <label>GitHub Token<input id="token" type="password" autocomplete="off" placeholder="github_pat_..."><span class="remember"><input id="remember" type="checkbox" checked> このブラウザに保存する</span></label>
   <div class="actions"><button id="save" type="button" disabled>保存</button><button id="clear" type="button">新しいファイルを外す</button></div>
   <div id="status" class="status"></div>
 </div>
-<div class="note">名前変更だけなら、新しいファイルを選ぶ必要はありません。GitHub上のファイル名と <b>backgrounds.json</b> の <b>image / video</b> だけを同時に変更します。<b>name / season</b> は触りません。</div>
+<div class="note">名前変更だけなら新しいファイルは不要です。<b>name / season</b> は変更せず、<b>image / video</b> だけを書き換えます。</div>
 </main>
 <script>
-const OWNER='sarscoc', REPO='TOUCHviaNotion', BRANCH='main';
+const OWNER='sarscoc',REPO='TOUCHviaNotion',BRANCH='main';
 const API=`https://api.github.com/repos/${OWNER}/${REPO}/contents/backgrounds`;
 const TOKEN_KEY='touchviaNotion.backgroundUploader.token';
 const NEW='__new__';
 const ALLOWED=new Set(['jpg','jpeg','png','webp','apng','mp4']);
-
-const slot=document.getElementById('slot');
-const filename=document.getElementById('filename');
-const token=document.getElementById('token');
-const remember=document.getElementById('remember');
-const file=document.getElementById('file');
-const save=document.getElementById('save');
-const clear=document.getElementById('clear');
-const status=document.getElementById('status');
-const currentLabel=document.getElementById('currentLabel');
-const currentImage=document.getElementById('currentImage');
-const currentVideo=document.getElementById('currentVideo');
-const currentEmpty=document.getElementById('currentEmpty');
-const previewImage=document.getElementById('previewImage');
-const previewVideo=document.getElementById('previewVideo');
-const hint=document.getElementById('hint');
-const selectedName=document.getElementById('selectedName');
-
-let backgrounds=[];
-let selectedFile=null;
-let previewUrl='';
-
-const savedToken=localStorage.getItem(TOKEN_KEY); if(savedToken) token.value=savedToken;
-
+const $=id=>document.getElementById(id);
+const slot=$('slot'),filename=$('filename'),token=$('token'),remember=$('remember'),file=$('file'),save=$('save'),clear=$('clear'),status=$('status'),currentLabel=$('currentLabel'),currentImage=$('currentImage'),currentVideo=$('currentVideo'),currentEmpty=$('currentEmpty'),previewImage=$('previewImage'),previewVideo=$('previewVideo'),hint=$('hint'),selectedName=$('selectedName');
+let backgrounds=[],selectedFile=null,previewUrl='';
+const savedToken=localStorage.getItem(TOKEN_KEY);if(savedToken)token.value=savedToken;
 function setStatus(text,type=''){status.textContent=text;status.className=`status ${type}`}
 function ext(name){const m=String(name||'').toLowerCase().match(/\.([a-z0-9]+)$/);return m?m[1]:''}
 function kind(name){return ext(name)==='mp4'?'video':'image'}
 function validName(name){return /^[A-Za-z0-9._-]+$/.test(name)&&ALLOWED.has(ext(name))}
 function isNew(){return slot.value===NEW}
-function item(){return isNew()?null:backgrounds[Number(slot.value)]||null}
-function asset(bg=item()){if(!bg)return '';return String(bg.video||bg.image||'')}
+function item(){return isNew()?null:(backgrounds[Number(slot.value)]||null)}
+function asset(bg=item()){return bg?String(bg.video||bg.image||''):''}
 function sync(){save.disabled=!(token.value.trim()&&validName(filename.value.trim())&&(isNew()?selectedFile:item()))}
-
 function hideMedia(img,video){img.style.display='none';img.removeAttribute('src');video.pause();video.style.display='none';video.removeAttribute('src');video.load()}
-function showMedia(url,name,img,video,ready,fail){hideMedia(img,video);if(kind(name)==='video'){video.onloadeddata=()=>{video.style.display='block';ready&&ready();video.play().catch(()=>{})};video.onerror=()=>fail&&fail();video.src=url;video.load()}else{img.onload=()=>{img.style.display='block';ready&&ready()};img.onerror=()=>fail&&fail();img.src=url}}
+function showMedia(url,name,img,video,ready,fail){hideMedia(img,video);if(kind(name)==='video'){video.onloadeddata=()=>{video.style.display='block';ready?.();video.play().catch(()=>{})};video.onerror=()=>fail?.();video.src=url;video.load()}else{img.onload=()=>{img.style.display='block';ready?.()};img.onerror=()=>fail?.();img.src=url}}
 function clearSelected(){selectedFile=null;file.value='';selectedName.textContent='';if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl='';hideMedia(previewImage,previewVideo);hint.style.display='block';sync()}
-
 function renderOptions(selected=null){slot.innerHTML='';const add=document.createElement('option');add.value=NEW;add.textContent='＋ 新しい背景を追加';slot.appendChild(add);backgrounds.forEach((bg,i)=>{const op=document.createElement('option');op.value=String(i);op.textContent=bg.video||bg.image||`background-${i+1}`;slot.appendChild(op)});if(selected!==null)slot.value=String(selected)}
-
 function refresh(){clearSelected();if(isNew()){filename.value='';currentLabel.textContent='新しい背景';currentEmpty.style.display='block';currentEmpty.textContent='まだ登録されていません';hideMedia(currentImage,currentVideo);setStatus('');sync();return}const name=asset();filename.value=name;currentLabel.textContent=name;currentEmpty.style.display='block';currentEmpty.textContent='読み込み中…';showMedia(`${encodeURIComponent(name)}?v=${Date.now()}`,name,currentImage,currentVideo,()=>currentEmpty.style.display='none',()=>{currentEmpty.style.display='block';currentEmpty.textContent='現在のファイルを読み込めませんでした。'});setStatus('');sync()}
-
-file.addEventListener('change',()=>{const f=file.files&&file.files[0];if(!f)return;if(!ALLOWED.has(ext(f.name))){setStatus('対応形式は JPEG / PNG / WebP / APNG / MP4 です。','err');return}clearSelected();selectedFile=f;previewUrl=URL.createObjectURL(f);showMedia(previewUrl,f.name,previewImage,previewVideo,()=>hint.style.display='none',()=>setStatus('プレビューできませんでした。','err'));selectedName.textContent=`${f.name} / ${(f.size/1024/1024).toFixed(2)} MB`;if(isNew())filename.value=f.name;sync()});
-slot.addEventListener('change',refresh);
-filename.addEventListener('input',sync);
-token.addEventListener('input',sync);
-clear.addEventListener('click',()=>{clearSelected();setStatus('')});
-
+file.addEventListener('change',()=>{const f=file.files?.[0];if(!f)return;if(!ALLOWED.has(ext(f.name))){setStatus('対応形式は JPEG / PNG / WebP / APNG / MP4 です。','err');return}clearSelected();selectedFile=f;previewUrl=URL.createObjectURL(f);showMedia(previewUrl,f.name,previewImage,previewVideo,()=>hint.style.display='none',()=>setStatus('プレビューできませんでした。','err'));selectedName.textContent=`${f.name} / ${(f.size/1024/1024).toFixed(2)} MB`;if(isNew())filename.value=f.name;sync()});
+slot.addEventListener('change',refresh);filename.addEventListener('input',sync);token.addEventListener('input',sync);clear.addEventListener('click',()=>{clearSelected();setStatus('')});
 function fileToBase64(f){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(new Error('ファイルを読み込めませんでした。'));r.readAsDataURL(f)})}
 function utf8ToBase64(text){return btoa(unescape(encodeURIComponent(text)))}
 function base64ToUtf8(text){return decodeURIComponent(escape(atob(String(text||'').replace(/\n/g,''))))}
-
-async function req(url,opt={}){const headers={Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',Authorization:`Bearer ${token.value.trim()}`,...(opt.headers||{})};const res=await fetch(url,{...opt,headers});if(!res.ok){let msg=`${res.status} ${res.statusText}`;try{const body=await res.json();if(body&&body.message)msg=body.message}catch{}const e=new Error(msg);e.status=res.status;throw e}if(res.status===204)return null;return res.json()}
+async function req(url,opt={}){const headers={Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',Authorization:`Bearer ${token.value.trim()}`,...(opt.headers||{})};const res=await fetch(url,{...opt,headers});if(!res.ok){let msg=`${res.status} ${res.statusText}`;try{const body=await res.json();if(body?.message)msg=body.message}catch{}const e=new Error(msg);e.status=res.status;throw e}if(res.status===204)return null;return res.json()}
 async function getFile(name){return req(`${API}/${encodeURIComponent(name)}?ref=${encodeURIComponent(BRANCH)}`)}
 async function putFile(name,content,sha,message){const body={message,content,branch:BRANCH};if(sha)body.sha=sha;return req(`${API}/${encodeURIComponent(name)}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}
 async function deleteFile(name,sha,message){return req(`${API}/${encodeURIComponent(name)}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,sha,branch:BRANCH})})}
 async function getBlobBase64(sha){const data=await req(`https://api.github.com/repos/${OWNER}/${REPO}/git/blobs/${sha}`);if(!data||data.encoding!=='base64'||!data.content)throw new Error('元ファイルを取得できませんでした。');return data.content.replace(/\n/g,'')}
-
 async function load(){const r=await fetch(`backgrounds.json?v=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('backgrounds.json を読み込めませんでした。');backgrounds=await r.json();renderOptions();slot.value=NEW;refresh()}
-
-async function saveNew(newName){let exists=null;try{exists=await getFile(newName)}catch(e){if(e.status!==404)throw e}if(exists)throw new Error(`${newName} はすでに存在します。`);
-const content=await fileToBase64(selectedFile);setStatus(`${newName} をアップロードしています…`,'work');const created=await putFile(newName,content,null,`Add background ${newName}`);const newSha=created?.content?.sha||null;
-try{const jsonFile=await getFile('backgrounds.json');const list=JSON.parse(base64ToUtf8(jsonFile.content));const entry={name:newName};if(kind(newName)==='video')entry.video=newName;else entry.image=newName;list.push(entry);await putFile('backgrounds.json',utf8ToBase64(JSON.stringify(list,null,2)+'\n'),jsonFile.sha,`Register background ${newName}`);backgrounds=list;renderOptions(list.length-1);refresh();setStatus(`✓ ${newName} を追加しました。`,'ok')}catch(e){if(newSha){try{await deleteFile(newName,newSha,`Rollback background ${newName}`)}catch{}}throw e}}
-
-async function saveExisting(newName){const index=Number(slot.value);const oldItem=item();const oldName=asset(oldItem);if(!oldName)throw new Error('現在のファイル名を取得できません。');const renamed=oldName!==newName;
-if(!renamed&& !selectedFile){setStatus('変更はありません。');return}
-const oldMeta=await getFile(oldName);
-let targetMeta=null;try{targetMeta=await getFile(newName)}catch(e){if(e.status!==404)throw e}
-if(renamed&&targetMeta)throw new Error(`${newName} はすでに存在します。`);
-let content;
-if(selectedFile){content=await fileToBase64(selectedFile)}else{content=await getBlobBase64(oldMeta.sha)}
-setStatus(`${newName} を保存しています…`,'work');const written=await putFile(newName,content,renamed?null:oldMeta.sha,renamed?`Rename background ${oldName} to ${newName}`:`Update background ${newName}`);const writtenSha=written?.content?.sha||null;
-if(renamed){try{const jsonFile=await getFile('backgrounds.json');const list=JSON.parse(base64ToUtf8(jsonFile.content));const live=list[index];if(!live)throw new Error('backgrounds.json の対象項目が見つかりません。');if(live.video){delete live.video;if(kind(newName)==='video')live.video=newName;else live.image=newName}else{delete live.image;if(kind(newName)==='video')live.video=newName;else live.image=newName}await putFile('backgrounds.json',utf8ToBase64(JSON.stringify(list,null,2)+'\n'),jsonFile.sha,`Rename background reference ${oldName} to ${newName}`);await deleteFile(oldName,oldMeta.sha,`Remove old background ${oldName}`);backgrounds=list;renderOptions(index);refresh();setStatus(`✓ ${oldName} → ${newName} に変更しました。`,'ok')}catch(e){if(writtenSha){try{await deleteFile(newName,writtenSha,`Rollback rename ${newName}`)}catch{}}throw e}}else{refresh();setStatus(`✓ ${newName} を更新しました。`,'ok')}}
-
+async function updateJson(mutator,message){let lastError=null;for(let attempt=0;attempt<3;attempt++){const jsonFile=await getFile('backgrounds.json');const list=JSON.parse(base64ToUtf8(jsonFile.content));mutator(list);try{await putFile('backgrounds.json',utf8ToBase64(JSON.stringify(list,null,2)+'\n'),jsonFile.sha,message);return list}catch(e){lastError=e;if(e.status!==409&&e.status!==422)throw e}}throw lastError||new Error('backgrounds.json を更新できませんでした。')}
+async function saveNew(newName){let exists=null;try{exists=await getFile(newName)}catch(e){if(e.status!==404)throw e}if(exists)throw new Error(`${newName} はすでに存在します。`);const content=await fileToBase64(selectedFile);setStatus(`${newName} をアップロードしています…`,'work');const created=await putFile(newName,content,null,`Add background ${newName}`);const newSha=created?.content?.sha||null;try{const list=await updateJson(list=>{const entry={name:newName};if(kind(newName)==='video')entry.video=newName;else entry.image=newName;list.push(entry)},`Register background ${newName}`);backgrounds=list;renderOptions(list.length-1);refresh();setStatus(`✓ ${newName} を追加しました。`,'ok')}catch(e){if(newSha){try{await deleteFile(newName,newSha,`Rollback background ${newName}`)}catch{}}throw e}}
+async function saveExisting(newName){const oldName=asset();if(!oldName)throw new Error('現在のファイル名を取得できません。');const renamed=oldName!==newName;if(!renamed&&!selectedFile){setStatus('変更はありません。');return}const oldMeta=await getFile(oldName);let targetMeta=null;try{targetMeta=await getFile(newName)}catch(e){if(e.status!==404)throw e}if(renamed&&targetMeta)throw new Error(`${newName} はすでに存在します。`);const content=selectedFile?await fileToBase64(selectedFile):await getBlobBase64(oldMeta.sha);setStatus(`${newName} を保存しています…`,'work');const written=await putFile(newName,content,renamed?null:oldMeta.sha,renamed?`Rename background ${oldName} to ${newName}`:`Update background ${newName}`);const writtenSha=written?.content?.sha||null;if(!renamed){refresh();setStatus(`✓ ${newName} を更新しました。`,'ok');return}try{const list=await updateJson(list=>{const live=list.find(bg=>bg.image===oldName||bg.video===oldName);if(!live)throw new Error(`backgrounds.json に ${oldName} が見つかりません。`);delete live.image;delete live.video;if(kind(newName)==='video')live.video=newName;else live.image=newName},`Rename background reference ${oldName} to ${newName}`);await deleteFile(oldName,oldMeta.sha,`Remove old background ${oldName}`);backgrounds=list;const idx=list.findIndex(bg=>bg.image===newName||bg.video===newName);renderOptions(idx>=0?idx:null);refresh();setStatus(`✓ ${oldName} → ${newName} に変更しました。`,'ok')}catch(e){if(writtenSha){try{await deleteFile(newName,writtenSha,`Rollback rename ${newName}`)}catch{}}throw e}}
 save.addEventListener('click',async()=>{if(save.disabled)return;save.disabled=true;try{if(remember.checked)localStorage.setItem(TOKEN_KEY,token.value.trim());else localStorage.removeItem(TOKEN_KEY);const name=filename.value.trim();if(!validName(name))throw new Error('対応拡張子を含む半角ファイル名にしてください。');if(isNew())await saveNew(name);else await saveExisting(name)}catch(e){console.error(e);setStatus(`保存できませんでした：${e.message}`,'err')}finally{sync()}});
-
 load().catch(e=>setStatus(e.message,'err'));sync();
 </script>
 </body>
