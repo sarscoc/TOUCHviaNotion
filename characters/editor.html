@@ -5423,15 +5423,7 @@ async function githubRefreshChoices() {
   renderExport();
   return snapshot;
 }
-function githubFlushDialogue() {
-  if(!dialogueReady)return Promise.resolve();
-  return new Promise((resolve,reject)=>{
-    const id=++dialogueRequestSeq;
-    const timer=setTimeout(()=>{dialoguePending.delete(id);reject(new Error('台詞の編集内容を取得できませんでした。もう一度保存してください。'));},3000);
-    dialoguePending.set(id,()=>{clearTimeout(timer);resolve();});
-    $('dialogueFrame').contentWindow.postMessage({type:'dialogue-request-data',requestId:id},'*');
-  });
-}
+function githubFlushDialogue() { return Promise.resolve(); }
 function githubEditorSignature() {
   return JSON.stringify({base:buildBaseJson(),costumes:costumes.map(buildCostumeJson),deleted:[...deletedCostumeIds],assets:[baseAsset?.url,...baseVariants.map(v=>v.asset?.url),...costumes.flatMap(c=>[c.asset?.url,...c.variants.map(v=>v.asset?.url)])]});
 }
@@ -5475,55 +5467,77 @@ function githubOverlayDialogue(raw,dialogue) {
   });
   return result;
 }
-function githubDialogueOutput(base,original={}) {
-  const out=clone(original);
-  for(const k of ['talk','special','greetingDates','greetingPeriods']) out[k]=clone(base[k]||(k==='talk'?{greeting:[],normal:[],rapid:[]}:k==='special'?{dates:[],periods:[]}:[]));
-  if(base.textStyle) out.textStyle=clone(base.textStyle);
-  out.areas=(base.areas||[]).map(a=>({key:String(a.key||a.name),talk:clone(a.talk||[]),rapid:clone(a.rapid||[])}));
-  // Preserve dialogue areas without a current touch rectangle (e.g. future Notion areas).
-  for(const area of original.areas||[]) if(!out.areas.some(a=>a.key===String(area.key||area.name))) out.areas.push(clone(area));
-  return out;
+async function githubWaitForDialogue() {}
+function dialogueViewTags(talk) {
+  const tags=[];
+  const expression=talk?.expression??talk?.variant;
+  if(expression)tags.push('表情：'+expression);
+  const when=talk?.when||{};
+  if(when.greeting)tags.push('あいさつ');
+  if(when.rapid)tags.push('連打');
+  if(when.date)tags.push('日付：'+when.date);
+  if(when.start||when.end)tags.push('期間：'+(when.start||'')+'〜'+(when.end||''));
+  const style=talk?.style||{};
+  if(style.animation)tags.push('演出：'+style.animation);
+  if(style.color)tags.push('色：'+style.color);
+  if(style.size)tags.push('文字サイズ：'+style.size);
+  if(style.font)tags.push('フォント：'+style.font);
+  return tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join('');
 }
-function githubPreserveTalkMetadata(incoming,previous) {
-  const used=new Set();
-  return (incoming||[]).map((talk,index)=>{
-    let at=(previous||[]).findIndex((old,i)=>!used.has(i)&&old.text===talk.text);
-    if(at<0&&previous?.length===incoming.length&&!used.has(index))at=index;
-    const old=at>=0?previous[at]:null;
-    if(at>=0)used.add(at);
-    const out={...(old?clone(old):{}),...clone(talk)};
-    // The current dialogue UI does not expose Notion's when or arbitrary extra fields.
-    // Retain them across its JSON round trip; edited text/style/continuations win.
-    for(const key of ['style','next','choices'])if(!Object.hasOwn(talk,key))delete out[key];
-    if(talk.next)out.next=githubPreserveTalkMetadata(talk.next,old?.next);
-    if(talk.choices)out.choices=githubPreserveTalkMetadata(talk.choices,old?.choices);
-    return out;
-  });
+function dialogueViewTalk(talk,depth=0) {
+  if(depth>20)return '';
+  if(typeof talk==='string')talk={text:talk};
+  if(!talk||typeof talk!=='object')return '';
+  const text=esc(talk.text??'');
+  const label=talk.label??talk.choice??talk.choiceLabel;
+  const choices=Array.isArray(talk.choices)?talk.choices:[];
+  const next=Array.isArray(talk.next)?talk.next:talk.next?[talk.next]:[];
+  return '<article class="talk">'+(label?'<div class="choice-label">選択肢：'+esc(label)+'</div>':'')+'<div class="text">'+text+'</div><div class="tags">'+dialogueViewTags(talk)+'</div>'+(next.length?'<div class="children">'+next.map(t=>dialogueViewTalk(t,depth+1)).join('')+'</div>':'')+(choices.length?'<div class="children choices">'+choices.map(t=>dialogueViewTalk(t,depth+1)).join('')+'</div>':'')+'</article>';
 }
-function githubPreserveDialogueMetadata(data,previous) {
-  for(const k of ['greeting','normal','rapid'])if(data.talk?.[k])data.talk[k]=githubPreserveTalkMetadata(data.talk[k],previous.talk?.[k]);
-  for(const a of data.areas||[]) {
-    const old=(previous.areas||[]).find(x=>String(x.key||x.name)===String(a.key||a.name));
-    for(const k of ['talk','rapid'])if(a[k])a[k]=githubPreserveTalkMetadata(a[k],old?.[k]);
+function dialogueViewSection(title,talks) {
+  if(!Array.isArray(talks)||!talks.length)return '';
+  return '<section><h3>'+esc(title)+'</h3>'+talks.map(t=>dialogueViewTalk(t)).join('')+'</section>';
+}
+function renderReadonlyDialogue() {
+  const target=$('dialogueTarget')?.value||'base';
+  const external=target==='base'?characterGithub.loaded?.external:null;
+  const data=external||currentDialogueData(target);
+  const sections=[];
+  sections.push(dialogueViewSection('通常',data.talk?.normal));
+  sections.push(dialogueViewSection('あいさつ',data.talk?.greeting));
+  sections.push(dialogueViewSection('連打',data.talk?.rapid));
+  const dateLabel=g=>g.date||[g.month,g.day].filter(v=>v!=null).join('/');
+  for(const g of data.greetingDates||[])sections.push(dialogueViewSection('あいさつ · '+dateLabel(g),g.talk));
+  for(const g of data.greetingPeriods||[])sections.push(dialogueViewSection('あいさつ · '+g.start+'〜'+g.end,g.talk));
+  for(const g of data.special?.dates||[])sections.push(dialogueViewSection('日付 · '+dateLabel(g),g.talk));
+  for(const g of data.special?.periods||[])sections.push(dialogueViewSection('期間 · '+g.start+'〜'+g.end,g.talk));
+  for(const area of data.areas||[]) {
+    const own=baseAreas.find(a=>String(a.key||a.name)===String(area.key||area.name));
+    const label=area.name||own?.name||area.key||'エリア';
+    sections.push(dialogueViewSection(label,area.talk));
+    sections.push(dialogueViewSection(label+' · 連打',area.rapid));
   }
-  for(const [groups,oldGroups] of [[data.greetingDates,previous.greetingDates],[data.greetingPeriods,previous.greetingPeriods],[data.special?.dates,previous.special?.dates],[data.special?.periods,previous.special?.periods]]) {
-    for(const group of groups||[]) {
-      const old=(oldGroups||[]).find(g=>(g.date||`${g.month}-${g.day}`)===(group.date||`${group.month}-${group.day}`)&&g.start===group.start&&g.end===group.end);
-      group.talk=githubPreserveTalkMetadata(group.talk,old?.talk);
-    }
-  }
-  return data;
+  const content=sections.filter(Boolean).join('');
+  const doc='<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;padding:8px;background:#f4f6f7;color:#33464d;font:13px/1.6 "Yu Gothic",Meiryo,sans-serif}.notice{color:#6f7f85;font-size:11px;margin-bottom:9px}section{margin-bottom:12px}h3{margin:0 0 5px;font-size:12px;color:#4e636b}.talk{border:1px solid #d8e1e4;border-radius:7px;background:#fff;padding:7px 9px;margin:5px 0}.text{white-space:pre-wrap;overflow-wrap:anywhere;user-select:text}.tags{display:flex;gap:4px;flex-wrap:wrap}.tag{font-size:10px;background:#edf3f5;color:#506c77;padding:0 5px;border-radius:4px;margin-top:4px}.children{margin:7px 0 0 9px;padding-left:9px;border-left:2px solid #d8e1e4}.choice-label{font-size:11px;color:#4c7a89;margin-bottom:3px}.empty{color:#7c8f96;padding:12px;border:1px dashed #ccd9de;border-radius:7px}</style></head><body><div class="notice">閲覧専用です。台詞はNotionで編集してください。［保存］では台詞データを書き換えません。</div>'+(content||'<div class="empty">台詞はまだありません。</div>')+'</body></html>';
+  if($('dialogueFrame').srcdoc!==doc)$('dialogueFrame').srcdoc=doc;
 }
-async function githubWaitForDialogue() {
-  if(dialogueReady) return;
-  await new Promise((resolve,reject)=>{
-    const started=Date.now();
-    const timer=setInterval(()=>{
-      if(dialogueReady){clearInterval(timer);resolve();}
-      else if(Date.now()-started>5000){clearInterval(timer);reject(new Error('台詞エディターの読み込みが完了していません。もう一度お試しください。'));}
-    },30);
-  });
+function initReadonlyDialogue() {
+  dialogueReady=true;
+  applyDialogueToBase=()=>{};
+  applyDialogueToCostume=()=>{};
+  flushDialogueEditor=()=>Promise.resolve();
+  sendDialogueTarget=renderReadonlyDialogue;
+  sendDialogueExpressionOptions=renderReadonlyDialogue;
+  syncDialogueAreas=renderReadonlyDialogue;
+  patchDialogueBasicMeta=renderReadonlyDialogue;
+  window.addEventListener('message',e=>{
+    if(String(e.data?.type||'').startsWith('dialogue-'))e.stopImmediatePropagation();
+  },true);
+  document.querySelector('.dialogueDockHead h2').textContent='台詞（閲覧専用）';
+  $('dialogueFrame').title='台詞ビューアー（閲覧専用）';
+  renderReadonlyDialogue();
 }
+
 async function githubLoadCharacter(path) {
   if(characterGithub.busy) return;
   githubBusy(true);
@@ -5577,7 +5591,6 @@ async function githubLoadCharacter(path) {
     renderBaseAll();renderCostumes();if(selectedCostume>=0)renderCostumeAll();renderExport();
     refreshDialogueTargetOptions();sendDialogueTarget();patchDialogueBasicMeta();
     await githubFlushDialogue();
-    characterGithub.loaded.dialogueSignature=external?JSON.stringify(githubDialogueOutput(buildBaseJson(),external)):null;
     resetEditorHistory();
     characterGithub.cleanSignature=githubEditorSignature();
     githubRenderChoices(snapshot,path);
@@ -5672,10 +5685,7 @@ async function githubSaveCharacter() {
     githubStatus('保存データ準備中…');
     const base=buildBaseJson(),loaded=characterGithub.loaded;
     const jsonPlan=await buildJsonSavePlan();
-    let dialogueOutput=null;
     if(loaded?.external) {
-      const candidate=githubDialogueOutput(base,loaded.external);
-      if(JSON.stringify(candidate)!==loaded.dialogueSignature) dialogueOutput=candidate;
       // Retain the original split layout; the game prefers dialogue.json.
       const parent=clone(base);
       for(const k of ['talk','special','greetingDates','greetingPeriods']) {
@@ -5687,7 +5697,6 @@ async function githubSaveCharacter() {
         for(const k of ['talk','rapid']) {if(original&&Object.hasOwn(original,k)) a[k]=clone(original[k]);else delete a[k];}
       }
       jsonPlan[0].blob=jsonBlob(parent);
-      if(dialogueOutput) jsonPlan.push({path:'dialogue.json',blob:jsonBlob(dialogueOutput)});
     }
     const portraits=await githubPortraitPlan();
     const plans=[...jsonPlan,...portraits].map(item=>({...item,path:`characters/${id}/`+githubValidatePath(item.path)}));
@@ -5727,8 +5736,7 @@ async function githubSaveCharacter() {
       const files=new Map(snapshot.files);
       allPlans.forEach(p=>files.set(p.path,{path:p.path,sha:p.sha,type:'blob',mode:'100644'}));
       deletions.forEach(e=>files.delete(e.path));
-      characterGithub.loaded={...loaded,id,path:`characters/${id}/${id}.json`,snapshot:{head:commit.sha,tree:tree.sha,files},external:dialogueOutput||loaded?.external||null,original:JSON.parse(await jsonPlan[0].blob.text())};
-      if(characterGithub.loaded.external) characterGithub.loaded.dialogueSignature=JSON.stringify(githubDialogueOutput(base,characterGithub.loaded.external));
+      characterGithub.loaded={...loaded,id,path:`characters/${id}/${id}.json`,snapshot:{head:commit.sha,tree:tree.sha,files},external:loaded?.external||null,original:JSON.parse(await jsonPlan[0].blob.text())};
       portraits.forEach(p=>characterGithub.portraits.set(p.asset,{file:p.blob,path:p.path,settings:$('maxSide').value+'|'+$('webpQuality').value}));
       cachedIndexEntries=index;
       deletedCostumeIds.clear();
@@ -5745,11 +5753,7 @@ async function githubSaveCharacter() {
 }
 
 function initCharacterGithub() {
-  const applyBase=applyDialogueToBase;
-  applyDialogueToBase=data=>applyBase(githubPreserveDialogueMetadata(clone(data),buildBaseJson()));
-  window.addEventListener('message',e=>{
-    if(String(e.data?.type||'').startsWith('dialogue-')&&e.source!==$('dialogueFrame').contentWindow)e.stopImmediatePropagation();
-  },true);
+  initReadonlyDialogue();
   const panel=document.createElement('div');
   panel.id='githubPanel';panel.hidden=true;panel.className='panel';
   panel.innerHTML='<div class="githubConnection"><label>キャラ<select id="githubCharacter"><option value="">読み込み中…</option></select></label><button id="githubRefresh" class="btn" type="button">↻ 一覧更新</button><button id="githubNew" class="btn" type="button">＋ 新規キャラ</button><label>GitHub Token<input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_..."></label><label class="githubRemember"><input id="githubRemember" type="checkbox">このブラウザに保存する</label><button id="githubClose" class="btn" type="button" aria-label="閉じる">×</button></div><div class="small muted">背景ツールと同じTokenを使用します。TOUCHviaNotion の Contents 読み書き権限が必要です。</div>';
@@ -5769,19 +5773,6 @@ function initCharacterGithub() {
   $('githubNew').onclick=githubNewCharacter;
   $('gameSaveToggle').onclick=e=>{e.stopPropagation();githubSaveCharacter();};
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();githubSaveCharacter();}});
-  const hideFrameSave=()=>{
-    const frame=$('dialogueFrame'),doc=frame.contentDocument;
-    const btn=doc?.getElementById('save');if(btn)btn.hidden=true;
-    if(!doc||doc._githubInputBound)return;
-    doc._githubInputBound=true;
-    // HTML textarea.rows shadows the editor's global rows in inline handlers.
-    // Run the same handler in the frame's JS scope so typing keeps working.
-    doc.addEventListener('input',e=>{
-      const el=e.target;
-      if(el.tagName==='TEXTAREA'&&el.hasAttribute('oninput'))el.oninput=frame.contentWindow.Function('event',el.getAttribute('oninput'));
-    },true);
-  };
-  $('dialogueFrame').addEventListener('load',hideFrameSave);hideFrameSave();
   window.addEventListener('beforeunload',e=>{if(characterGithub.busy||(characterGithub.cleanSignature&&githubEditorSignature()!==characterGithub.cleanSignature)){e.preventDefault();e.returnValue='';}});
   githubBusy(true);githubStatus('一覧読込中…');
   Promise.all([githubRefreshChoices(),githubWaitForDialogue().then(githubFlushDialogue)]).then(()=>{
