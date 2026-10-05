@@ -32,7 +32,7 @@ const SESSION_PERSON_PROPERTIES = [
   'ɪɴᴠᴇꜱᴛɪɢᴀᴛᴏʀ',
 ];
 
-async function notion(path, options = {}) {
+async function notionOnce(path, options = {}, attempt = 0) {
   const response = await fetch(`https://api.notion.com/v1${path}`, {
     ...options,
     headers: {
@@ -43,11 +43,27 @@ async function notion(path, options = {}) {
     },
   });
 
+  if (response.status === 429 && attempt < 5) {
+    const seconds = Math.max(1, Number(response.headers.get('retry-after')) || 6);
+    await new Promise(resolve => setTimeout(resolve, seconds * 1000));
+    return notionOnce(path, options, attempt + 1);
+  }
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`Notion API ${response.status} ${path}\n${body}`);
   }
   return response.json();
+}
+
+
+let notionQueue = Promise.resolve();
+function notion(path, options = {}) {
+  const task = notionQueue.then(async () => {
+    await new Promise(resolve => setTimeout(resolve, 450));
+    return notionOnce(path, options);
+  });
+  notionQueue = task.catch(() => {});
+  return task;
 }
 
 function dashedId(id) {
