@@ -1806,12 +1806,49 @@ function renderNewsTicker(items) {
     });
 }
 
+
+let cachedNewsPayload = null;
+let newsMidnightTimer = null;
+function newsTokyoDate(now = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+    const get = key => parts.find(p=>p.type===key).value;
+    return {month:Number(get('month')),day:Number(get('day'))};
+}
+function newsItemsForToday(payload, now = new Date()) {
+    if (!Array.isArray(payload?.anniversaryCalendar)) return normalizeNewsItems(payload);
+    const items = normalizeNewsItems(payload);
+    const index = items.findIndex(item=>item.text==="TODAY'S ANNIVERSARY");
+    const today = newsTokyoDate(now);
+    const reports = payload.anniversaryCalendar.filter(item=>Number(item.month)===today.month && Number(item.day)===today.day);
+    const current = normalizeNewsItems(reports);
+    return [...(index>=0?items.slice(0,index):items),{text:"TODAY'S ANNIVERSARY",url:"",separatorBefore:"✦"},
+        ...(current.length?current:[{text:'今日が記念日の卓報告はありません',url:'',separatorBefore:'✧'}])];
+}
+function scheduleNewsMidnight() {
+    clearTimeout(newsMidnightTimer);
+    const now=Date.now(),day=86400000;
+    const delay=day-((now+9*3600000)%day);
+    newsMidnightTimer=setTimeout(()=>{
+        if(cachedNewsPayload)renderNewsTicker(newsItemsForToday(cachedNewsPayload));
+        loadNewsTicker();
+        scheduleNewsMidnight();
+    },delay);
+}
+document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden && cachedNewsPayload) {
+        renderNewsTicker(newsItemsForToday(cachedNewsPayload));
+        scheduleNewsMidnight();
+    }
+});
+scheduleNewsMidnight();
+
 async function loadNewsTicker() {
     try {
         const response = await fetch(`${NEWS_FEED_URL}?v=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) throw new Error(`news-feed.json ${response.status}`);
         const payload = await response.json();
-        renderNewsTicker(normalizeNewsItems(payload));
+        cachedNewsPayload=payload;
+        renderNewsTicker(newsItemsForToday(payload));
     } catch (error) {
         console.info("SARSCOC NEWS: news-feed.json はまだ未接続です", error);
         renderNewsTicker(NEWS_FALLBACK_ITEMS);
