@@ -5403,7 +5403,7 @@ setTimeout(()=>{resetEditorHistory();editorHistoryTimer=setInterval(captureEdito
 const characterGithub = {
   api: 'https://api.github.com/repos/sarscoc/TOUCHviaNotion',
   branch: 'main', tokenKey: 'touchviaNotion.backgroundUploader.token',
-  loaded: null, busy: false, cleanSignature: '', portraits: new WeakMap()
+  loaded: null, busy: false, cleanSignature: '', portraits: new WeakMap(), names: new Map(), nameCache: new Map()
 };
 
 function githubStatus(message, error=false) {
@@ -5465,12 +5465,23 @@ function githubCharacterEntries(snapshot) {
 function githubRenderChoices(snapshot,selected=characterGithub.loaded?.path||'') {
   const select=$('githubCharacter');
   select.replaceChildren(new Option('キャラを選択…',''));
-  for(const path of githubCharacterEntries(snapshot)) select.add(new Option(path.split('/')[1],path));
+  for(const path of githubCharacterEntries(snapshot)) { const id=path.split('/')[1],name=characterGithub.names.get(path); select.add(new Option(name?id+' '+name:id,path)); }
   select.value=selected;
 }
 async function githubRefreshChoices() {
   const snapshot=await githubSnapshot();
   cachedIndexEntries=await githubIndex(snapshot);
+  const paths=githubCharacterEntries(snapshot);
+  for(let i=0;i<paths.length;i+=4) {
+    await Promise.all(paths.slice(i,i+4).map(async path=>{
+      const entry=snapshot.files.get(path);
+      try {
+        let raw=characterGithub.nameCache.get(entry.sha);
+        if(!raw){raw=await githubJson(entry);characterGithub.nameCache.set(entry.sha,raw);}
+        characterGithub.names.set(path,String(raw.name||'').trim());
+      } catch(_){characterGithub.names.delete(path);}
+    }));
+  }
   githubRenderChoices(snapshot);
   renderExport();
   return snapshot;
@@ -5638,7 +5649,7 @@ async function githubLoadCharacter(path) {
     cachedIndexEntries=index;
     activeCharacterDirHandle=null;
     setCharacterFolderUi(id);
-    $('characterFolderPick').textContent='キャラ：'+id;
+    $('characterFolderPick').textContent='キャラを開く';
     $('characterFolderPick').title=prefix;
     $('baseId').readOnly=true;
     $('baseId').title='既存キャラのフォルダ名';
@@ -5648,6 +5659,7 @@ async function githubLoadCharacter(path) {
     await githubFlushDialogue();
     resetEditorHistory();
     characterGithub.cleanSignature=githubEditorSignature();
+    characterGithub.names.set(path,$('baseName').value.trim());
     githubRenderChoices(snapshot,path);
     $('githubPanel').hidden=true;
     githubStatus('読込済み');
@@ -5917,18 +5929,6 @@ function installPortraitScaleSliders() {
   renderBaseAssetCards=()=>{baseRender();installPortraitScaleSliders();};
   renderCostumeAssetCards=()=>{costumeRender();installPortraitScaleSliders();};
   installPortraitScaleSliders();
-}
-</script>
-<script>
-function updateCurrentCharacterName() {
-  const name=$('baseName').value.trim(),id=$('baseId').value.trim();
-  $('characterFolderPick').textContent=name?'キャラ：'+name:(id?'キャラ：'+id:'キャラを開く');
-}
-{
-  const exportRender=renderExport;
-  renderExport=()=>{exportRender();updateCurrentCharacterName();};
-  $('baseName').addEventListener('input',updateCurrentCharacterName);
-  updateCurrentCharacterName();
 }
 </script>
 </body>
