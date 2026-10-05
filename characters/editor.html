@@ -5602,13 +5602,16 @@ async function githubLoadCharacter(path) {
     const entries=[...snapshot.files.values()].filter(e=>e.path.startsWith(prefix)&&(/\.json$/i.test(e.path)||/\.(webp|png|jpe?g|gif|avif)$/i.test(e.path)));
     // Read a consistent commit using immutable blob SHAs before changing editor state.
     const files=[];
-    for(const entry of entries) {
-      const bytes=await githubBlobBytes(entry);
-      const rel=entry.path.slice(prefix.length);
-      const type=/\.json$/i.test(rel)?'application/json':/\.webp$/i.test(rel)?'image/webp':/\.png$/i.test(rel)?'image/png':'image/'+(/\.jpe?g$/i.test(rel)?'jpeg':rel.split('.').pop());
-      const file=new File([bytes],rel.split('/').pop(),{type});
-      Object.defineProperty(file,'webkitRelativePath',{value:id+'/'+rel});
-      files.push(file);
+    for(let offset=0;offset<entries.length;offset+=4) {
+      const batch=await Promise.all(entries.slice(offset,offset+4).map(async entry=>{
+        const bytes=await githubBlobBytes(entry);
+        const rel=entry.path.slice(prefix.length);
+        const type=/\.json$/i.test(rel)?'application/json':/\.webp$/i.test(rel)?'image/webp':/\.png$/i.test(rel)?'image/png':'image/'+(/\.jpe?g$/i.test(rel)?'jpeg':rel.split('.').pop());
+        const file=new File([bytes],rel.split('/').pop(),{type});
+        Object.defineProperty(file,'webkitRelativePath',{value:id+'/'+rel});
+        return file;
+      }));
+      files.push(...batch);
     }
     const folder=makeFolderMap(files);
     const raw=await readJsonFile(folder.map.get(id+'.json'));
@@ -5909,6 +5912,18 @@ function installPortraitScaleSliders() {
   renderBaseAssetCards=()=>{baseRender();installPortraitScaleSliders();};
   renderCostumeAssetCards=()=>{costumeRender();installPortraitScaleSliders();};
   installPortraitScaleSliders();
+}
+</script>
+<script>
+function updateCurrentCharacterName() {
+  const name=$('baseName').value.trim(),id=$('baseId').value.trim();
+  $('characterFolderPick').textContent=name?'キャラ：'+name:(id?'キャラ：'+id:'キャラを開く');
+}
+{
+  const exportRender=renderExport;
+  renderExport=()=>{exportRender();updateCurrentCharacterName();};
+  $('baseName').addEventListener('input',updateCurrentCharacterName);
+  updateCurrentCharacterName();
 }
 </script>
 </body>
