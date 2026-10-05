@@ -20,10 +20,10 @@
     {
       "key": "area2",
       "name": "エリア2",
-      "x": 783,
-      "y": 553,
-      "width": 282,
-      "height": 204,
+      "x": 779,
+      "y": 531,
+      "width": 310,
+      "height": 216,
       "priority": "normal"
     },
     {
@@ -47,9 +47,7 @@
       "crop": {
         "x": 79,
         "y": 30,
-        "size": 343,
-        "sourceWidth": 497,
-        "sourceHeight": 1600
+        "size": 343
       }
     }
   }
