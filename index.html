@@ -3297,7 +3297,8 @@ function getGreetingDateTalk() {
             Array.isArray(item.talk) &&
             item.talk.length > 0
         ) {
-            return item.talk[0];
+            const talk = conditionedTalkPool(item.talk, { greeting: true })[0];
+            if (talk) return talk;
         }
     }
     return null;
@@ -3312,7 +3313,8 @@ function getGreetingPeriodTalk() {
             Array.isArray(item.talk) &&
             item.talk.length > 0
         ) {
-            return item.talk[0];
+            const talk = conditionedTalkPool(item.talk, { greeting: true })[0];
+            if (talk) return talk;
         }
     }
     return null;
@@ -3322,7 +3324,7 @@ function getGreetingPeriodTalk() {
 function showGreeting() {
     const dateGreeting = getGreetingDateTalk();
     const periodGreeting = getGreetingPeriodTalk();
-    const normalGreetingPool = getMergedTalkSection("greeting");
+    const normalGreetingPool = conditionedTalkPool(getMergedTalkSection("greeting"), { greeting: true });
     const normalGreeting = normalGreetingPool.length > 0 ? normalGreetingPool[0] : null;
 
     const greeting = dateGreeting || periodGreeting || normalGreeting;
@@ -3391,6 +3393,9 @@ function isInPeriod(start, end) {
 function isTalkConditionActive(talk, context = {}) {
     const when = talk && talk.when && typeof talk.when === "object" ? talk.when : null;
     if (!when) return true;
+    const requiredCostume = String(when.costume || '').trim();
+    const currentCostumeName = getCurrentCostumeValue() === 'normal' ? '' : String(data?.name || '').trim();
+    if (requiredCostume && requiredCostume !== currentCostumeName) return false;
 
     const isGreeting = Boolean(context.greeting);
     const isRapid = Boolean(context.rapid);
@@ -3424,7 +3429,7 @@ function getDateTalk() {
         }
     });
 
-    const talk = takeBalancedTalk(pool, "special_date_pool");
+    const talk = takeBalancedTalk(conditionedTalkPool(pool), "special_date_pool");
     if (talk) markSpecialUsed("date");
     return talk;
 }
@@ -3446,7 +3451,7 @@ function getPeriodTalk() {
         }
     });
 
-    const talk = takeBalancedTalk(pool, "special_period_pool");
+    const talk = takeBalancedTalk(conditionedTalkPool(pool), "special_period_pool");
     if (talk) markSpecialUsed("period");
     return talk;
 }
