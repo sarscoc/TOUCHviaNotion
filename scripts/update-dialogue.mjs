@@ -20,6 +20,7 @@ const PROPERTY_ALIASES = {
   color: ['文字色'],
   font: ['フォント'],
   expression: ['表情'],
+  costume: ['衣装限定'],
   memo: ['メモ'], // 人間用。JSONには出さない。
 };
 
@@ -492,7 +493,7 @@ function addGroupedTalk(items, keyFields, talk) {
     連打 + 月日           -> 全体rapidに入り、その日だけ有効
 */
 function attachTalkConditions(talk, { greeting = false, rapid = false, dateInfo = null } = {}) {
-  const when = {};
+  const when = { ...(talk.when || {}) };
   if (greeting) when.greeting = true;
   if (rapid) when.rapid = true;
   if (dateInfo?.type === 'date') when.date = dateInfo.date;
@@ -505,6 +506,8 @@ function attachTalkConditions(talk, { greeting = false, rapid = false, dateInfo 
 }
 
 export function addRootTalkToDialogue(dialogue, root, compiledTalk, warnings = []) {
+  const costume = String(root.costume || '').trim();
+  if (costume) compiledTalk.when = { ...(compiledTalk.when || {}), costume };
   const scenes = root.scenes || [];
   const normalized = scenes.map(value => String(value).trim()).filter(Boolean);
   const hasGreeting = normalized.some(value => value === 'あいさつ' || value === '挨拶');
@@ -633,6 +636,7 @@ function normalizeRow(page, parentId, warnings) {
     font: fontKeyFromNotion(rawFont),
     animation: animationKeyFromNotion(rawAnimation),
     expression: firstText(page, PROPERTY_ALIASES.expression),
+    costume: firstText(page, PROPERTY_ALIASES.costume).trim(),
     parentId: parentId || null,
     createdTime: page.created_time || '',
     page,
