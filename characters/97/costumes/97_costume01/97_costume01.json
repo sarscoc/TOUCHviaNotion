@@ -1,0 +1,11 @@
+{
+  "id": "97_costume01",
+  "name": "私服",
+  "dialogueSource": 97,
+  "image": "97_costume01.webp",
+  "position": {
+    "x": 964,
+    "y": 1819,
+    "scale": 836
+  }
+}

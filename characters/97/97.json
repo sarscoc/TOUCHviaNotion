@@ -11,5 +11,16 @@
   "birthday": {
     "month": 2,
     "day": 21
+  },
+  "_editorNormalOpen": true,
+  "menu": {
+    "icon": {
+      "image": "97.webp",
+      "crop": {
+        "x": 271,
+        "y": 32,
+        "size": 606
+      }
+    }
   }
 }

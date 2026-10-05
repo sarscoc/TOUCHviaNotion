@@ -1,0 +1,11 @@
+{
+  "id": "97_costume02",
+  "name": "着物",
+  "dialogueSource": 97,
+  "image": "97_costume02.webp",
+  "position": {
+    "x": 967,
+    "y": 1845,
+    "scale": 690
+  }
+}
