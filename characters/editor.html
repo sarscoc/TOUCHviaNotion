@@ -5892,6 +5892,11 @@ initMobileEditor();
 </script>
 <script>
 function installPortraitScaleSliders() {
+  document.querySelectorAll('.assetCard .assetDetails > .compactGrid').forEach(grid=>{
+    const details=grid.parentElement;
+    grid.style.marginTop='8px';
+    details.before(grid);
+  });
   document.querySelectorAll('[data-base-normal-scale-top],[data-base-vscale-top],[data-costume-normal-scale-top],[data-costume-vscale-top]').forEach(number=>{
     if(number.parentElement.querySelector('.portraitScaleSlider'))return;
     number.step='0.001';
