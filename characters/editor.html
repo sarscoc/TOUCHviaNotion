@@ -5584,6 +5584,37 @@ function renderReadonlyDialogue() {
   const doc='<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;padding:8px;background:#f4f6f7;color:#33464d;font:13px/1.6 "Yu Gothic",Meiryo,sans-serif}.notice{color:#6f7f85;font-size:11px;margin-bottom:9px}section{margin-bottom:12px}h3{margin:0 0 5px;font-size:12px;color:#4e636b}.talk{border:1px solid #d8e1e4;border-radius:7px;background:#fff;padding:7px 9px;margin:5px 0}.text{white-space:pre-wrap;overflow-wrap:anywhere;user-select:text}.tags{display:flex;gap:4px;flex-wrap:wrap}.tag{font-size:10px;background:#edf3f5;color:#506c77;padding:0 5px;border-radius:4px;margin-top:4px}.children{margin:7px 0 0 9px;padding-left:9px;border-left:2px solid #d8e1e4}.choice-label{font-size:11px;color:#4c7a89;margin-bottom:3px}.empty{color:#7c8f96;padding:12px;border:1px dashed #ccd9de;border-radius:7px}</style></head><body><div class="notice">閲覧専用です。台詞はNotionで編集してください。［保存］では台詞データを書き換えません。</div>'+(content||'<div class="empty">台詞はまだありません。</div>')+'</body></html>';
   if($('dialogueFrame').srcdoc!==doc)$('dialogueFrame').srcdoc=doc;
 }
+
+async function githubRunNotionSync(workflow,button,label) {
+  if(!githubToken()) {
+    $('githubPanel').hidden=false;
+    githubStatus('更新にはGitHub Tokenが必要です。Contentsに加えてActionsの読み書き権限を設定してください。',true);
+    return;
+  }
+  button.disabled=true;button.textContent=label+'中…';
+  const started=Date.now();
+  try {
+    await githubPost('/actions/workflows/'+workflow+'/dispatches',{ref:characterGithub.branch});
+    githubStatus(label+'を開始しました…');
+    let success=false;
+    while(Date.now()-started<30*60*1000) {
+      await new Promise(resolve=>setTimeout(resolve,5000));
+      const result=await githubRequest('/actions/workflows/'+workflow+'/runs?event=workflow_dispatch&branch='+encodeURIComponent(characterGithub.branch)+'&per_page=5');
+      const run=(result.workflow_runs||[]).find(r=>Date.parse(r.created_at)>=started-2000);
+      if(!run || run.status!=='completed')continue;
+      if(run.conclusion!=='success')throw new Error('GitHubで更新に失敗しました。Actionsの実行結果を確認してください。');
+      success=true;break;
+    }
+    if(!success){githubStatus('更新はGitHubで継続中です。完了後に画面を読み込み直してください。');return;}
+    if(workflow==='sync-dialogue.yml' && !characterGithub.busy && characterGithub.loaded && githubEditorSignature()===characterGithub.cleanSignature) {
+      await githubLoadCharacter(characterGithub.loaded.path);
+    }
+    githubStatus(label+'が完了しました。ゲームへの反映には公開処理が完了してから再読み込みしてください。');
+  } catch(err) {
+    githubStatus(err.status===403?'更新にはTokenの Actions: Read and write 権限が必要です。':'更新できません：'+err.message,true);
+  } finally {button.disabled=false;button.textContent=label;}
+}
+
 function initReadonlyDialogue() {
   dialogueReady=true;
   applyDialogueToBase=()=>{};
@@ -5597,13 +5628,13 @@ function initReadonlyDialogue() {
     if(String(e.data?.type||'').startsWith('dialogue-'))e.stopImmediatePropagation();
   },true);
   document.querySelector('.dialogueDockHead h2').textContent='台詞（閲覧専用）';
-  const syncLink=document.createElement('a');
-  syncLink.className='btn mini';
-  syncLink.href='https://github.com/sarscoc/TOUCHviaNotion/actions/workflows/sync-dialogue.yml';
-  syncLink.target='_blank';syncLink.rel='noopener noreferrer';
-  syncLink.textContent='台詞を手動更新 ↗';
-  syncLink.title='GitHubで Run workflow を押してNotionの台詞を取り込みます';
-  document.querySelector('.dialogueDockHead h2').after(syncLink);
+
+  for(const [workflow,label] of [['sync-dialogue.yml','台詞を更新'],['sync-news.yml','卓報告を更新']]) {
+    const button=document.createElement('button');
+    button.type='button';button.className='btn mini';button.textContent=label;
+    button.addEventListener('click',()=>githubRunNotionSync(workflow,button,label));
+    document.querySelector('.dialogueDockHead h2').after(button);
+  }
   $('dialogueFrame').title='台詞ビューアー（閲覧専用）';
   renderReadonlyDialogue();
 }
