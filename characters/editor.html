@@ -5597,6 +5597,13 @@ function initReadonlyDialogue() {
     if(String(e.data?.type||'').startsWith('dialogue-'))e.stopImmediatePropagation();
   },true);
   document.querySelector('.dialogueDockHead h2').textContent='台詞（閲覧専用）';
+  const syncLink=document.createElement('a');
+  syncLink.className='btn mini';
+  syncLink.href='https://github.com/sarscoc/TOUCHviaNotion/actions/workflows/sync-dialogue.yml';
+  syncLink.target='_blank';syncLink.rel='noopener noreferrer';
+  syncLink.textContent='台詞を手動更新 ↗';
+  syncLink.title='GitHubで Run workflow を押してNotionの台詞を取り込みます';
+  document.querySelector('.dialogueDockHead h2').after(syncLink);
   $('dialogueFrame').title='台詞ビューアー（閲覧専用）';
   renderReadonlyDialogue();
 }
