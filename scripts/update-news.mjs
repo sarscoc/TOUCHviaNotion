@@ -392,6 +392,31 @@ async function buildAnniversaryItems(dataSource, today, warnings) {
   return out.map(({ year, ...item }) => item);
 }
 
+
+async function preloadSessionNames(dataSource) {
+  const loaded = new Set();
+  for (const name of SESSION_PERSON_PROPERTIES) {
+    const prop = dataSource.schema?.properties?.[name];
+    if (prop?.type !== 'relation') continue;
+    const relation = prop.relation || {};
+    const sourceId = relation.data_source_id, databaseId = relation.database_id;
+    const key = sourceId || databaseId;
+    if (!key || loaded.has(key)) continue;
+    loaded.add(key);
+    try {
+      const source = sourceId
+        ? { id: sourceId, schema: await notion('/data_sources/' + sourceId) }
+        : await findDataSource({ id: databaseId, expectedProperties: [] });
+      const pages = await queryAll(source.id);
+      const titleName = titlePropertyName(source.schema);
+      for (const page of pages) relatedPageTitleCache.set(page.id, Promise.resolve(pageTitle(page, titleName)));
+      console.log('関連名簿をまとめて取得: ' + name + ' / ' + pages.length + '件');
+    } catch (error) {
+      console.warn('関連名簿は個別取得します: ' + name + ' / ' + error.message);
+    }
+  }
+}
+
 async function main() {
   const warnings = [];
   const today = tokyoParts();
@@ -402,6 +427,7 @@ async function main() {
     findDataSource(DATABASES.birthdays),
   ]);
 
+  await preloadSessionNames(sessionDataSource);
   const items = [];
   items.push({ text: 'SARS LAND', url: '', separatorBefore: '' });
   items.push(await buildCfItem(cfDataSource, today));
