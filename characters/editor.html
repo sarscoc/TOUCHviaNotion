@@ -1092,6 +1092,55 @@ html.iconCropActive #iconCropZoom{
 #githubPanel[hidden]{display:none}
 #githubMessage{min-height:18px;margin:0 0 6px;overflow-wrap:anywhere}
 #saveStatus{max-width:110px!important}
+/* Phone layout, shared with the existing desktop editor. */
+.mobileEditorNav,.mobileInfoToggle,.mobileScale{display:none}
+@media(max-width:900px){
+  html,body{max-width:100%;overflow-x:clip}
+  .wrap{margin:0 auto;padding:8px 8px calc(78px + env(safe-area-inset-bottom));width:100%;min-width:0}
+  .title{font-size:15px}.top{margin-bottom:7px}
+  .mainControlBar{position:sticky;top:0;z-index:100;display:flex!important;flex-direction:column;align-items:stretch!important;gap:6px;overflow:visible!important;white-space:normal!important;background:#f3f6f7;padding:6px 0;border-bottom:1px solid #d7e1e4}
+  .mainControlBar .projectTools{order:0;display:grid!important;grid-template-columns:minmax(0,1fr) 88px;gap:6px;flex:none!important;width:100%;margin:0!important}
+  .mainControlBar #characterFolderPick{min-width:0;max-width:none!important;overflow:hidden;text-overflow:ellipsis}
+  .mainControlBar #gameSaveToggle{font-size:15px!important;font-weight:700}
+  .mainControlBar #saveStatus{grid-column:1/-1;height:auto!important;min-height:0!important;max-width:100%!important;font-size:11px!important;line-height:1.4!important;white-space:normal!important}
+  .mainControlBar .tabs{order:1;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:0;width:100%;flex:none!important}
+  .mainControlBar .btn,.mainControlBar .tab{height:40px!important;min-height:40px!important;padding:4px!important;white-space:normal!important;font-size:11px!important;line-height:1.25!important}
+  .mainControlBar .projectTools .btn{height:44px!important;min-height:44px!important}
+  .mainControlBar #basicInfoPanel{order:2;width:100%!important;flex:none!important;margin:0;max-height:38dvh;overflow:auto;white-space:normal!important}
+  body:not(.mobileInfoOpen) #basicInfoPanel{display:none!important}
+  .mobileInfoToggle{display:block}
+  .mainControlBar .basicInfoGrid{display:grid!important;grid-template-columns:58px minmax(0,1fr)!important;gap:8px!important;white-space:normal!important}
+  .mainControlBar .basicInfoGrid label{font-size:12px!important}
+  .mainControlBar #baseId,.mainControlBar #baseName,.mainControlBar #basePage{width:100%!important;min-width:0!important;flex:none!important;font-size:16px!important;height:40px!important;padding:6px 8px!important}
+  .mainControlBar .basicBirth{height:40px!important;width:auto!important;gap:8px!important}
+  .mainControlBar .basicBirth input{height:40px!important;font-size:16px!important;width:74px!important;min-width:0!important;flex:none!important;padding:6px!important}
+  #githubPanel{margin-top:8px}.githubConnection{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  .githubConnection label{min-width:0;flex-wrap:wrap}.githubConnection label:has(input[type=password]){grid-column:1/-1}
+  .githubConnection input[type=password],.githubConnection select{width:100%;max-width:none;min-width:0;font-size:16px;min-height:44px}
+  .githubConnection .btn{min-height:44px;padding:6px;font-size:12px}.githubRemember{grid-column:1/-1;white-space:normal}
+  #githubMessage{margin:6px 0;font-size:12px}
+  .editorGrid{grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
+  .editorGrid>div{min-width:0}.editorGrid>.previewPanel{order:-1;position:static;padding:6px;margin:0}
+  .viewport.pc{min-height:0;aspect-ratio:16/9;width:100%}
+  .previewModeTabs{display:none}
+  .panel{padding:10px}.panel h3{font-size:14px}
+  .btn,.assetCard button,.areaCard button,.costumeChoice button{min-height:40px}
+  .assetCard,.areaCard{min-width:0}.assetCard input,.areaCard input{min-width:0}
+  input:not([type=range]):not([type=checkbox]):not([type=hidden]),select,textarea{font-size:16px!important;max-width:100%}
+  .row{grid-template-columns:82px minmax(0,1fr)}
+  .mobileScale{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:9px 3px 3px;font-size:12px}
+  .mobileScale input{flex:1;min-width:100px;min-height:40px;accent-color:#72b8cb}.mobileScale output{min-width:42px;text-align:right}
+  .dialogueDock{margin:8px 0 0!important}.dialogueFrame{height:calc(100dvh - 240px)!important;min-height:320px}
+  body:not([data-mobile-section=dialogue]) .dialogueDock{display:none!important}
+  body[data-mobile-section=dialogue] .tabPage{display:none!important}
+  .mobileEditorNav{position:fixed;z-index:9000;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(250,253,254,.97);border-top:1px solid #ccdce1;box-shadow:0 -3px 16px #3040470c}
+  .mobileEditorNav button{min-height:46px;border:1px solid #d1e1e6;border-radius:9px;background:#fff;color:#4e6b76;font-size:14px;font-weight:700}
+  .mobileEditorNav button[aria-pressed=true]{background:#dff2f7;border-color:#72b8cb;color:#276e80}
+  .nameBox[contenteditable=true]{font-size:16px!important;min-height:40px}
+  .iconCropCard{width:calc(100vw - 20px);max-height:90dvh;overflow:auto}.iconCropStage{max-width:100%}.iconCropStage canvas{max-width:100%;height:auto;touch-action:none}
+  .iconCropActions button{min-height:44px}.iconCropZoomRow input{min-height:40px}
+}
+
 </style>
 </head>
 <body>
@@ -5781,6 +5830,58 @@ function initCharacterGithub() {
   }).catch(err=>{panel.hidden=false;githubStatus(err.message,true);}).finally(()=>githubBusy(false));
 }
 initCharacterGithub();
+
+</script>
+<script>
+function initMobileEditor() {
+  const nav=document.createElement('nav');nav.className='mobileEditorNav';nav.setAttribute('aria-label','編集画面');
+  nav.innerHTML='<button type="button" data-mobile-target="base" aria-pressed="true">立ち絵</button><button type="button" data-mobile-target="costume" aria-pressed="false">衣装</button><button type="button" data-mobile-target="dialogue" aria-pressed="false">台詞を見る</button>';
+  document.body.append(nav);
+  const info=document.createElement('button');info.type='button';info.id='mobileInfoToggle';info.className='btn mobileInfoToggle';info.textContent='基本情報';info.setAttribute('aria-expanded','false');info.setAttribute('aria-controls','basicInfoPanel');
+  document.querySelector('.mainControlBar .tabs').append(info);
+  info.onclick=()=>{const open=document.body.classList.toggle('mobileInfoOpen');info.setAttribute('aria-expanded',String(open));};
+  document.addEventListener('click',e=>{
+    if(!matchMedia('(max-width:900px)').matches||e.target.closest('input,button,select,textarea'))return;
+    const name=e.target.closest('.assetName.editable,.areaNameInline.editable');
+    if(name&&!name.isContentEditable&&name.ondblclick){e.preventDefault();e.stopImmediatePropagation();name.ondblclick.call(name,e);}
+  },true);
+  const select=kind=>{
+    document.body.dataset.mobileSection=kind;
+    nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mobileTarget===kind)));
+  };
+  const activate=activateEditorTab;
+  activateEditorTab=kind=>{activate(kind);select(kind);};
+  select(document.querySelector('#tab-costume.active')?'costume':'base');
+  nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const kind=b.dataset.mobileTarget;
+    if(kind==='dialogue'){select(kind);renderReadonlyDialogue();}
+    else activateEditorTab(kind);
+    document.body.classList.remove('mobileInfoOpen');info.setAttribute('aria-expanded','false');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+  for(const kind of ['base','costume']) {
+    const row=document.createElement('label');row.className='mobileScale';
+    row.innerHTML='<span>通常立ち絵の大きさ</span><input type="range" min="10" max="4000" step="1" aria-label="通常立ち絵の大きさ"><output></output>';
+    $(kind+'Viewport').after(row);
+    const slider=row.querySelector('input'),output=row.querySelector('output');
+    const sync=()=>{
+      const value=kind==='base'?Number($('baseScale').value)||1000:costumes[selectedCostume]?.position.scale||1000;
+      slider.max=String(Math.max(4000,value));slider.value=String(value);output.value=String(Math.round(value));
+      slider.disabled=kind==='costume'&&!costumes[selectedCostume];
+    };
+    slider.oninput=()=>{
+      const value=Number(slider.value);output.value=slider.value;
+      if(kind==='base'){$('baseScale').value=slider.value;$('baseScale').oninput();}
+      else if(costumes[selectedCostume]){costumes[selectedCostume].position.scale=value;$('costumeScale').value=slider.value;renderCostumePreview();}
+      renderExport();
+    };
+    const render=kind==='base'?renderBasePreview:renderCostumePreview;
+    if(kind==='base')renderBasePreview=()=>{render();sync();};
+    else renderCostumePreview=()=>{render();sync();};
+    sync();
+  }
+}
+initMobileEditor();
 
 </script>
 </body>
