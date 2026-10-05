@@ -349,7 +349,7 @@ async function buildAnniversaryItems(dataSource, today, warnings) {
       : dateProp?.date;
     const date = datePartsFromNotion(notionDate?.start);
     const endDate = datePartsFromNotion(notionDate?.end);
-    if (!date || date.month !== today.month || date.day !== today.day) continue;
+    if (!date || (today && (date.month !== today.month || date.day !== today.day))) continue;
 
     const title = pageTitle(page, titleName);
     if (!title) continue;
@@ -367,6 +367,8 @@ async function buildAnniversaryItems(dataSource, today, warnings) {
       url: pagePublicUrl(page, warnings, `ANNIVERSARY ${title}`),
       separatorBefore: '✧',
       year: date.year,
+      month: date.month,
+      day: date.day,
     });
   }
 
@@ -400,7 +402,8 @@ async function main() {
     });
   }
 
-  const anniversaries = await buildAnniversaryItems(sessionDataSource, today, warnings);
+  const anniversaryCalendar = await buildAnniversaryItems(sessionDataSource, null, warnings);
+  const anniversaries = anniversaryCalendar.filter(item => item.month === today.month && item.day === today.day);
   items.push({ text: "TODAY'S ANNIVERSARY", url: '', separatorBefore: '✦' });
   if (anniversaries.length) {
     items.push(...anniversaries);
@@ -417,6 +420,7 @@ async function main() {
     timeZone: TIME_ZONE,
     date: `${today.year}-${String(today.month).padStart(2, '0')}-${String(today.day).padStart(2, '0')}`,
     items,
+    anniversaryCalendar,
     warnings,
   };
 
