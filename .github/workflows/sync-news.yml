@@ -3,7 +3,10 @@ name: Sync Notion News
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "0 15 * * *" # 日本時間 0:00
+  push:
+    paths:
+      - "scripts/update-news.mjs"
 
 permissions:
   contents: write
