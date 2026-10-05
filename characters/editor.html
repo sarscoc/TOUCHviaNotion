@@ -3565,7 +3565,7 @@ function renderBaseAssetCards(){
       <div class="compactGrid">
         <div class="compactField"><label>X</label><input data-base-normal-x type="number" value="${Number($("basePosX").value)||0}"></div>
         <div class="compactField"><label>Y</label><input data-base-normal-y type="number" value="${Number($("basePosY").value)||0}"></div>
-        <div class="compactField"><label>倍率</label><input data-base-normal-scale-top type="number" step="0.01" min="0.01" value="${baseNormalRatio().toFixed(2)}"></div>
+        <div class="compactField"><label>倍率</label><input data-base-normal-scale-top type="number" step="0.01" min="0.01" value="${baseNormalRatio().toFixed(3)}"></div>
       </div>
       <div class="assetActions"><button class="btn mini" data-base-center>画像中央を画面中央へ</button></div>
       ${iconChoiceHtml({kind:"base",variantIndex:-1},baseAsset)}
@@ -3586,7 +3586,7 @@ function renderBaseAssetCards(){
         <div class="compactGrid">
           <div class="compactField"><label>X</label><input data-base-vx="${i}" type="number" value="${Number(v.data.offsetX||0)}"></div>
           <div class="compactField"><label>Y</label><input data-base-vy="${i}" type="number" value="${Number(v.data.offsetY||0)}"></div>
-          <div class="compactField"><label>倍率</label><input data-base-vscale-top="${i}" type="number" step="0.01" min="0.05" value="${Number(v.data.scale??1).toFixed(2)}"></div>
+          <div class="compactField"><label>倍率</label><input data-base-vscale-top="${i}" type="number" step="0.01" min="0.05" value="${Number(v.data.scale??1).toFixed(3)}"></div>
         </div>
         <div class="assetActions">
           <button class="btn mini primary" data-base-align="${i}">通常の場所に揃える</button>
@@ -3736,7 +3736,7 @@ function renderCostumeAssetCards(){
       <div class="compactGrid">
         <div class="compactField"><label>X</label><input data-costume-normal-x type="number" value="${Number(c.position.x)||0}"></div>
         <div class="compactField"><label>Y</label><input data-costume-normal-y type="number" value="${Number(c.position.y)||0}"></div>
-        <div class="compactField"><label>倍率</label><input data-costume-normal-scale-top type="number" step="0.01" min="0.01" value="${costumeNormalRatio(c).toFixed(2)}"></div>
+        <div class="compactField"><label>倍率</label><input data-costume-normal-scale-top type="number" step="0.01" min="0.01" value="${costumeNormalRatio(c).toFixed(3)}"></div>
       </div>
       <div class="assetActions"><button class="btn mini" data-costume-center>画像中央を画面中央へ</button></div>
       ${iconChoiceHtml({kind:"costume",costumeIndex:selectedCostume,variantIndex:-1},c.asset)}
@@ -3757,7 +3757,7 @@ function renderCostumeAssetCards(){
         <div class="compactGrid">
           <div class="compactField"><label>X</label><input data-costume-vx="${i}" type="number" value="${Number(v.data.offsetX||0)}"></div>
           <div class="compactField"><label>Y</label><input data-costume-vy="${i}" type="number" value="${Number(v.data.offsetY||0)}"></div>
-          <div class="compactField"><label>倍率</label><input data-costume-vscale-top="${i}" type="number" step="0.01" min="0.05" value="${Number(v.data.scale??1).toFixed(2)}"></div>
+          <div class="compactField"><label>倍率</label><input data-costume-vscale-top="${i}" type="number" step="0.01" min="0.05" value="${Number(v.data.scale??1).toFixed(3)}"></div>
         </div>
         <div class="assetActions">
           <button class="btn mini primary" data-costume-align="${i}">通常の場所に揃える</button>
@@ -5886,6 +5886,30 @@ function initMobileEditor() {
 }
 initMobileEditor();
 
+</script>
+<script>
+function installPortraitScaleSliders() {
+  document.querySelectorAll('[data-base-normal-scale-top],[data-base-vscale-top],[data-costume-normal-scale-top],[data-costume-vscale-top]').forEach(number=>{
+    if(number.parentElement.querySelector('.portraitScaleSlider'))return;
+    number.step='0.001';
+    const slider=document.createElement('input');
+    slider.type='range';slider.className='portraitScaleSlider';
+    slider.min=number.min||'0.01';slider.step='0.001';
+    slider.max=String(Math.max(4,Number(number.value)||1));slider.value=number.value;
+    slider.setAttribute('aria-label',number.hasAttribute('data-costume-normal-scale-top')||number.hasAttribute('data-costume-vscale-top')?'衣装の倍率':'通常の倍率');
+    slider.style.cssText='width:100%;min-height:32px;accent-color:#72b8cb';
+    number.parentElement.style.flexWrap='wrap';
+    number.after(slider);
+    slider.oninput=()=>{number.value=slider.value;number.dispatchEvent(new Event('input',{bubbles:true}));};
+    number.addEventListener('input',()=>{slider.max=String(Math.max(4,Number(number.value)||1));slider.value=number.value;});
+  });
+}
+{
+  const baseRender=renderBaseAssetCards,costumeRender=renderCostumeAssetCards;
+  renderBaseAssetCards=()=>{baseRender();installPortraitScaleSliders();};
+  renderCostumeAssetCards=()=>{costumeRender();installPortraitScaleSliders();};
+  installPortraitScaleSliders();
+}
 </script>
 </body>
 </html>
