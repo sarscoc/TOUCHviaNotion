@@ -3031,7 +3031,8 @@ function buildBaseJson(){
         crop:{
           x:Math.max(0,Math.round(Number(icon.crop.x)||0)),
           y:Math.max(0,Math.round(Number(icon.crop.y)||0)),
-          size:Math.max(1,Math.round(Number(icon.crop.size)||1))
+          size:Math.max(1,Math.round(Number(icon.crop.size)||1)),
+          ...(Number(icon.crop.sourceWidth)>0&&Number(icon.crop.sourceHeight)>0?{sourceWidth:Number(icon.crop.sourceWidth),sourceHeight:Number(icon.crop.sourceHeight)}:{})
         }
       };
     }else{
@@ -3438,9 +3439,9 @@ function openIconCropTool(ref){
   let crop=null;
   if(previous&&String(previous.image||"")===resolved.path&&previous.crop){
     crop={
-      x:Number(previous.crop.x)||0,
-      y:Number(previous.crop.y)||0,
-      size:Number(previous.crop.size)||0
+      x:(Number(previous.crop.x)||0)*resolved.asset.width/(Number(previous.crop.sourceWidth)||resolved.asset.width),
+      y:(Number(previous.crop.y)||0)*resolved.asset.height/(Number(previous.crop.sourceHeight)||resolved.asset.height),
+      size:(Number(previous.crop.size)||0)*resolved.asset.width/(Number(previous.crop.sourceWidth)||resolved.asset.width)
     };
   }
   if(!crop||!crop.size)crop=defaultIconCrop(resolved.asset);
@@ -3489,7 +3490,9 @@ function applyIconCrop(){
     crop:{
       x:Math.round(s.crop.x),
       y:Math.round(s.crop.y),
-      size:Math.round(s.crop.size)
+      size:Math.round(s.crop.size),
+      sourceWidth:s.asset.width,
+      sourceHeight:s.asset.height
     }
   };
 
