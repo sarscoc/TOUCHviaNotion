@@ -24,5 +24,16 @@
         "sourceHeight": 2400
       }
     }
-  }
+  },
+  "areas": [
+    {
+      "key": "area1",
+      "name": "エリア1",
+      "x": 908,
+      "y": 87,
+      "width": 192,
+      "height": 161,
+      "priority": "normal"
+    }
+  ]
 }
