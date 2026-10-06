@@ -39,18 +39,27 @@
   "areas": [
     {
       "key": "area1",
-      "talk": [
+      "talk": [],
+      "rapid": [
         {
-          "text": "……"
+          "text": "……",
+          "when": {
+            "rapid": true
+          }
         },
         {
-          "text": "ん……"
+          "text": "ん……",
+          "when": {
+            "rapid": true
+          }
         },
         {
-          "text": "やめてくれ"
+          "text": "やめてくれ",
+          "when": {
+            "rapid": true
+          }
         }
-      ],
-      "rapid": []
+      ]
     }
   ]
 }
