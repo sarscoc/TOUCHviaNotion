@@ -1548,7 +1548,7 @@ a.news-ticker-item:focus-visible{
     <div id="game">
         <img id="background" alt="">
         <video id="backgroundVideo" autoplay muted loop playsinline preload="auto"></video>
-        <img id="character" alt="">
+        <img id="character" alt="" fetchpriority="high">
         <img id="frame" alt="">
 
 
@@ -2669,11 +2669,40 @@ async function chooseInitialCharacter() {
 }
 
 async function loadCharacter(char) {
+    const selection = ++characterSelectionToken;
     currentBaseCharacter = char;
+    availableCostumes = [];
+    preloadCharacterImage(char, "high");
+    const costumesPending = loadCostumesForCharacter(char);
     await loadDialogueForCharacter(char);
-    availableCostumes = await loadCostumesForCharacter(char);
+    if (selection !== characterSelectionToken) return;
     await activateCharacterData(char, { greet: true });
     closeMenu();
+    const loadedCostumes = await costumesPending;
+    if (selection !== characterSelectionToken) return;
+    availableCostumes = loadedCostumes;
+    setupCostumeSelector();
+    for (const costume of loadedCostumes) preloadCharacterImage(costume, "low");
+}
+
+let characterSelectionToken = 0;
+const portraitPreloads = new Map();
+
+function preloadCharacterImage(char, priority = "low") {
+    const initialVariant = char?.variants?.find(item => item?.name === char.defaultVariant);
+    const names = [initialVariant?.image || char?.image, char?.image];
+    for (const name of new Set(names.filter(Boolean))) {
+        const path = getImagePath(name, char);
+        if (portraitPreloads.has(path)) continue;
+        const image = new Image();
+        image.fetchPriority = priority;
+        portraitPreloads.set(path, image);
+        image.onerror = () => {
+            if (portraitPreloads.get(path) === image) portraitPreloads.delete(path);
+        };
+        image.src = path;
+        while (portraitPreloads.size > 16) portraitPreloads.delete(portraitPreloads.keys().next().value);
+    }
 }
 
 function normalizePageUrl(value) {
