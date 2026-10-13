@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-12T22:23:58.125Z",
+  "generatedAt": "2026-10-13T20:30:43.804Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-10-13",
+  "date": "2026-10-14",
   "items": [
     {
       "text": "SARS LAND",
@@ -29,9 +29,11 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日が記念日の卓報告はありません",
-      "url": "",
-      "separatorBefore": "✧"
+      "text": "2020/10/14 ナンとカレーなダンスを！ #中島 #sars #ほと #マサシ #hiMe #おと #鷹司 榊 #五木 調 #千財 澪伊 #真原 乍之助 #真方 鵜松明",
+      "url": "https://sarsland.notion.site/b78d9875fa5042bdad904ea689f614d1",
+      "separatorBefore": "✧",
+      "month": 10,
+      "day": 14
     }
   ],
   "anniversaryCalendar": [
