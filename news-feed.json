@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-17T17:46:27.224Z",
+  "generatedAt": "2026-10-18T17:50:45.508Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-10-18",
+  "date": "2026-10-19",
   "items": [
     {
       "text": "SARS LAND",
@@ -19,8 +19,13 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日誕生日の探索者はいません",
-      "url": "",
+      "text": "亜帆山 照茉",
+      "url": "https://sarsland.notion.site/02a34cde4d5e4fc88147b170f986cc8e",
+      "separatorBefore": "✧"
+    },
+    {
+      "text": "目幸 さゆり",
+      "url": "https://sarsland.notion.site/1887a26d9063495d9f2e2bcd10c7d2b5",
       "separatorBefore": "✧"
     },
     {
@@ -29,25 +34,11 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "2024/10/18 DTA #はれる #sars #西間 申織",
-      "url": "https://sarsland.notion.site/DTA-1234fddb0aaa800e9679c7d1b4379af5",
+      "text": "2016/10/19 闇を呼ぶメロディー #kuliyon #sars #ひらひら #向日・アルダー・葵",
+      "url": "https://sarsland.notion.site/91e26216d97a4776b9b87af3bfc46255",
       "separatorBefore": "✧",
       "month": 10,
-      "day": 18
-    },
-    {
-      "text": "2022/10/18 - 10/29 愛罠蜂 #紺野 #sars #とわこ #フェリシアン・ブルドン #リサ",
-      "url": "https://sarsland.notion.site/b9532d09b06d4b0d8e1587febb22cddf",
-      "separatorBefore": "✧",
-      "month": 10,
-      "day": 18
-    },
-    {
-      "text": "2021/10/18 オウヤサマ #みそ #sars #みそ #鹿嶋 守",
-      "url": "https://sarsland.notion.site/f8205cf5e8f34d0ea72d95f48d8867d4",
-      "separatorBefore": "✧",
-      "month": 10,
-      "day": 18
+      "day": 19
     }
   ],
   "anniversaryCalendar": [
