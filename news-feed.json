@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-18T17:50:45.508Z",
+  "generatedAt": "2026-10-19T20:23:12.267Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-10-19",
+  "date": "2026-10-20",
   "items": [
     {
       "text": "SARS LAND",
@@ -19,13 +19,8 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "亜帆山 照茉",
-      "url": "https://sarsland.notion.site/02a34cde4d5e4fc88147b170f986cc8e",
-      "separatorBefore": "✧"
-    },
-    {
-      "text": "目幸 さゆり",
-      "url": "https://sarsland.notion.site/1887a26d9063495d9f2e2bcd10c7d2b5",
+      "text": "閨中 密",
+      "url": "https://sarsland.notion.site/29585342b13644f98cc1024115da872f",
       "separatorBefore": "✧"
     },
     {
@@ -34,11 +29,9 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "2016/10/19 闇を呼ぶメロディー #kuliyon #sars #ひらひら #向日・アルダー・葵",
-      "url": "https://sarsland.notion.site/91e26216d97a4776b9b87af3bfc46255",
-      "separatorBefore": "✧",
-      "month": 10,
-      "day": 19
+      "text": "今日が記念日の卓報告はありません",
+      "url": "",
+      "separatorBefore": "✧"
     }
   ],
   "anniversaryCalendar": [
@@ -216,6 +209,13 @@
       "separatorBefore": "✧",
       "month": 10,
       "day": 15
+    },
+    {
+      "text": "2026/10/19 偶像に恋して ＃止 #sars #カワナミ #すいと #宮社 #うどん #四熊 リアム #四熊 柳生 #四熊 桐生 #四熊 幹宏",
+      "url": "https://sarsland.notion.site/3fe4fddb0aaa8082ac89cc9624e1d8cc",
+      "separatorBefore": "✧",
+      "month": 10,
+      "day": 19
     },
     {
       "text": "2025/01/13 からおそろしい窖 #sars #A",
