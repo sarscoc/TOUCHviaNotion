@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-19T20:23:12.267Z",
+  "generatedAt": "2026-10-20T18:55:16.686Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-10-20",
+  "date": "2026-10-21",
   "items": [
     {
       "text": "SARS LAND",
@@ -19,8 +19,8 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "閨中 密",
-      "url": "https://sarsland.notion.site/29585342b13644f98cc1024115da872f",
+      "text": "今日誕生日の探索者はいません",
+      "url": "",
       "separatorBefore": "✧"
     },
     {
@@ -29,9 +29,11 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日が記念日の卓報告はありません",
-      "url": "",
-      "separatorBefore": "✧"
+      "text": "2020/10/21 肉ノ迷宮 #三夜澤泳 #sars #三夜澤泳 #白野 円",
+      "url": "https://sarsland.notion.site/5596e721c44b45c1b421fa342b820bd3",
+      "separatorBefore": "✧",
+      "month": 10,
+      "day": 21
     }
   ],
   "anniversaryCalendar": [
