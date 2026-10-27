@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-26T20:19:01.772Z",
+  "generatedAt": "2026-10-27T19:49:47.155Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-10-27",
+  "date": "2026-10-28",
   "items": [
     {
       "text": "SARS LAND",
@@ -19,18 +19,8 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "成瀬川 土左衛門",
-      "url": "https://sarsland.notion.site/c9fcea12dc9b47bbb28b644580ef6766",
-      "separatorBefore": "✧"
-    },
-    {
-      "text": "沢柴 菱咲子",
-      "url": "https://sarsland.notion.site/b778c2b92f3d4527b880931d35c20172",
-      "separatorBefore": "✧"
-    },
-    {
-      "text": "閨中 寂",
-      "url": "https://sarsland.notion.site/935786d478d84a2f9ab6e50bd66b31a5",
+      "text": "今日誕生日の探索者はいません",
+      "url": "",
       "separatorBefore": "✧"
     },
     {
@@ -39,9 +29,11 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日が記念日の卓報告はありません",
-      "url": "",
-      "separatorBefore": "✧"
+      "text": "2019/10/28 零肺飛行 #イチト #sars #イチト #天秤 有零",
+      "url": "https://sarsland.notion.site/0be15fa757a94f3db832df45b684d1db",
+      "separatorBefore": "✧",
+      "month": 10,
+      "day": 28
     }
   ],
   "anniversaryCalendar": [
