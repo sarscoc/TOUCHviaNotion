@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-01T19:22:46.963Z",
+  "generatedAt": "2026-11-02T22:59:44.338Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-11-02",
+  "date": "2026-11-03",
   "items": [
     {
       "text": "SARS LAND",
@@ -19,8 +19,13 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日誕生日の探索者はいません",
-      "url": "",
+      "text": "碼 乱昉",
+      "url": "https://sarsland.notion.site/2994fddb0aaa8098bcb9c7c3334429b3",
+      "separatorBefore": "✧"
+    },
+    {
+      "text": "鳴海 青葉",
+      "url": "https://sarsland.notion.site/8613c89e17de42bdb6a440a815eb96f4",
       "separatorBefore": "✧"
     },
     {
@@ -29,25 +34,11 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "2022/11/02 - 11/08 あトの祀リ #あとまちゃー #sars #る #あまいの #あおつき #たまご #松本 永太 #蛙守 時雨 #水次 将人 #星野 莉子 #鳴海 青葉",
-      "url": "https://sarsland.notion.site/502bd562e82540c28bb91bf4313557e4",
+      "text": "2021/11/03 - 11/12 Residuum:Philadelphia #ひかげ #最先端 #墓薙 #ねこぜ #ひらひら #読野 安城 #才賀 敷 #深海 索ノ進 #有明 定規 #豚座 薔薇子",
+      "url": "https://sarsland.notion.site/Residuum-Philadelphia-91e3a93f5d254d72900611f9d6ad2dd1",
       "separatorBefore": "✧",
       "month": 11,
-      "day": 2
-    },
-    {
-      "text": "2022/11/02 - 12/13 サチノミ喰らい #sars #さいとう #すぐる #ほにゃぴ #とわこ #パリパリチョコバー #八重満 天秀 #岩慶 #八幡 武慶",
-      "url": "https://sarsland.notion.site/cabb9ed108664079bc21a080380d1a94",
-      "separatorBefore": "✧",
-      "month": 11,
-      "day": 2
-    },
-    {
-      "text": "2021/11/02 - 12/29 昭和怪談四谷心中鼠地獄 #草がゆ #よんはーふ #さいとう #sars #浅野 白隆 #時恋間 悼介 #閨中 密",
-      "url": "https://sarsland.notion.site/d56b9a7bcbf74f27b9831344f28fbbe8",
-      "separatorBefore": "✧",
-      "month": 11,
-      "day": 2
+      "day": 3
     }
   ],
   "anniversaryCalendar": [
