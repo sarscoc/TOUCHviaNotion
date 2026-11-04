@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-03T20:46:37.118Z",
+  "generatedAt": "2026-11-04T21:04:30.371Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-11-04",
+  "date": "2026-11-05",
   "items": [
     {
       "text": "SARS LAND",
@@ -29,9 +29,11 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日が記念日の卓報告はありません",
-      "url": "",
-      "separatorBefore": "✧"
+      "text": "2020/11/05 - 11/06 さよならを言いに来た（さよ団子） #kuliyon #sars #矢筈 昴",
+      "url": "https://sarsland.notion.site/95447d82aa054d0ea63d1823e3f53241",
+      "separatorBefore": "✧",
+      "month": 11,
+      "day": 5
     }
   ],
   "anniversaryCalendar": [
