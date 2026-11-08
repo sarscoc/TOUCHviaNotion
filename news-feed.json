@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-07T19:15:53.257Z",
+  "generatedAt": "2026-11-08T19:20:26.575Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-11-08",
+  "date": "2026-11-09",
   "items": [
     {
       "text": "SARS LAND",
@@ -19,8 +19,13 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日誕生日の探索者はいません",
-      "url": "",
+      "text": "夜叉 五倍子",
+      "url": "https://sarsland.notion.site/d4745cb1f14f4ee7934c27133b5192fd",
+      "separatorBefore": "✧"
+    },
+    {
+      "text": "多々陀 丁",
+      "url": "https://sarsland.notion.site/844882f55a8c410193277d922bd12a97",
       "separatorBefore": "✧"
     },
     {
@@ -29,9 +34,11 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日が記念日の卓報告はありません",
-      "url": "",
-      "separatorBefore": "✧"
+      "text": "2022/11/09 - 11/17 雨孵 #2 #sars #みそ #中島 #ひよこミキサーちゃん #餅永 ときわ #福邊 くくる #狸森 みつ",
+      "url": "https://sarsland.notion.site/2-d835ec2f7e71444cacb5b84717fcc11a",
+      "separatorBefore": "✧",
+      "month": 11,
+      "day": 9
     }
   ],
   "anniversaryCalendar": [
