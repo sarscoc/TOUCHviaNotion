@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12T21:44:01.406Z",
+  "generatedAt": "2026-11-13T21:11:30.794Z",
   "timeZone": "Asia/Tokyo",
-  "date": "2026-11-13",
+  "date": "2026-11-14",
   "items": [
     {
       "text": "SARS LAND",
@@ -19,8 +19,13 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日誕生日の探索者はいません",
-      "url": "",
+      "text": "中百舌鳥 龍",
+      "url": "https://sarsland.notion.site/1604fddb0aaa803d9387f83bba6cc4ad",
+      "separatorBefore": "✧"
+    },
+    {
+      "text": "聞口 歩見",
+      "url": "https://sarsland.notion.site/703ce0fe3881453da2d9ab907ec5836e",
       "separatorBefore": "✧"
     },
     {
@@ -29,9 +34,18 @@
       "separatorBefore": "✦"
     },
     {
-      "text": "今日が記念日の卓報告はありません",
-      "url": "",
-      "separatorBefore": "✧"
+      "text": "2022/11/14 - 11/20 じょはり #いおう #sars #聞口 歩見",
+      "url": "https://sarsland.notion.site/d5d83ba3c9f645a3a8cb57b5af2880f4",
+      "separatorBefore": "✧",
+      "month": 11,
+      "day": 14
+    },
+    {
+      "text": "2019/11/14 零肺飛行 #ひらひら #sars #ひらひら #一 束",
+      "url": "https://sarsland.notion.site/6e15c8e707e04c5684cf4c3312683bb4",
+      "separatorBefore": "✧",
+      "month": 11,
+      "day": 14
     }
   ],
   "anniversaryCalendar": [
